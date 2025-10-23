@@ -2,6 +2,7 @@ package com.mock_project_java_cevc_hung.hunglpmockjava.entity;
 
 import com.mock_project_java_cevc_hung.hunglpmockjava.entity.base.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -20,7 +21,10 @@ public class BookingEntity extends BaseEntity {
     @JoinColumn(name = "tour_id")
     private TourEntity tour;
 
+    @Min(0)
     private Integer qty;
+
+    @Min(0)
     private Double amount;
 
     @Enumerated(EnumType.STRING)

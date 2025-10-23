@@ -2,8 +2,10 @@ package com.mock_project_java_cevc_hung.hunglpmockjava.entity;
 
 import com.mock_project_java_cevc_hung.hunglpmockjava.entity.base.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,13 +21,15 @@ public class TourEntity extends BaseEntity {
     @Column(nullable = false)
     private String description;
 
-    @Column(nullable = false)
-    private Double price;
+    @Min(0)
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal price;
 
     @Column(nullable = false)
     private String location;
     private String thumbnailUrl;
 
+    @Min(0)
     @Column(nullable = false)
     private Integer seatsTotal;
 

@@ -2,6 +2,9 @@ package com.mock_project_java_cevc_hung.hunglpmockjava.entity;
 
 import com.mock_project_java_cevc_hung.hunglpmockjava.entity.base.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 import java.util.List;
@@ -11,15 +14,20 @@ import java.util.List;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class UserEntity extends BaseEntity {
 
+    @NotBlank
     @Column(nullable = false)
     private String name;
 
-    @Column(length = 11)
-    private int phone_number;
+    @Pattern(regexp = "^0\\d{9,10}$", message = "Phone number must be 10 or 11 digits")
+    @Column(length = 11, nullable = false)
+    private String phone_number;
 
+    @Email(message = "Email invalid format")
     @Column(unique = true, nullable = false)
     private String email;
 
+    @NotBlank
+    @Column(nullable = false)
     private String password;
 
     private String address;

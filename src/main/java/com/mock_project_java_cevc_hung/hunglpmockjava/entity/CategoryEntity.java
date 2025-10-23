@@ -2,6 +2,7 @@ package com.mock_project_java_cevc_hung.hunglpmockjava.entity;
 
 import com.mock_project_java_cevc_hung.hunglpmockjava.entity.base.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.List;
 @Table(name = "categories")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class CategoryEntity extends BaseEntity {
+    @NotBlank
     @Column(nullable = false)
     private String name;
 

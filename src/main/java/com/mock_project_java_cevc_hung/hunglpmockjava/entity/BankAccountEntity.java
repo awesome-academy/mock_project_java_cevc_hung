@@ -7,7 +7,7 @@ import lombok.*;
 @Entity
 @Table(name = "bank_accounts")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class BankAccountEntity extends BaseEntity {
+public class    BankAccountEntity extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
