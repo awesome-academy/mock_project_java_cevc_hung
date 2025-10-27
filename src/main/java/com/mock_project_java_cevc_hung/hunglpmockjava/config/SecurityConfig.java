@@ -1,6 +1,7 @@
 package com.mock_project_java_cevc_hung.hunglpmockjava.config;
 
 import com.mock_project_java_cevc_hung.hunglpmockjava.security.AuthTokenFilter;
+import com.mock_project_java_cevc_hung.hunglpmockjava.security.JwtAuthenticationEntryPoint;
 import com.mock_project_java_cevc_hung.hunglpmockjava.security.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -23,6 +24,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
     @Autowired
     UserDetailsServiceImpl userDetailsService;
+    
+    @Autowired
+    JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
@@ -59,6 +63,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/reviews/**").permitAll()
                 .requestMatchers("/api/categories/**").permitAll()
                 .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+                .requestMatchers("/*.html").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/admin/login", "/admin/login-error").permitAll()
                 .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
@@ -75,6 +80,9 @@ public class SecurityConfig {
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/admin/login")
                 .permitAll()
+            )
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
             )
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)

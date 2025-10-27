@@ -48,6 +48,14 @@ public class GoogleOAuth2Service {
         return (String) idToken.getPayload().get("email");
     }
 
+    public String getPhoneFromToken(GoogleIdToken idToken) {
+        return (String) idToken.getPayload().get("phone_number");
+    }
+    
+    public String getAddressFromToken(GoogleIdToken idToken) {
+        return (String) idToken.getPayload().get("address");
+    }
+
     public String getNameFromToken(GoogleIdToken idToken) {
         return (String) idToken.getPayload().get("name");
     }

@@ -102,6 +102,8 @@ public class AuthService {
         // Get user info from verified token
         String email = googleOAuth2Service.getEmailFromToken(idToken);
         String name = googleOAuth2Service.getNameFromToken(idToken);
+        String phone = googleOAuth2Service.getPhoneFromToken(idToken);
+        String address = googleOAuth2Service.getAddressFromToken(idToken);
         
         if (email == null || email.isEmpty()) {
             throw new GoogleAuthenticationException("Email not found in Google token");
@@ -116,8 +118,8 @@ public class AuthService {
                     .name(name != null ? name : "Google User")
                     .email(email)
                     .password(encoder.encode("google_oauth2_user"))
-                    .phone_number("0000000000")
-                    .address("Google User Address")
+                    .phone_number(phone != null ? phone : "0000000000")
+                    .address(address != null ? address : "Google User Address")
                     .provider(UserEntity.Provider.GOOGLE)
                     .build();
             userRepository.save(user);
