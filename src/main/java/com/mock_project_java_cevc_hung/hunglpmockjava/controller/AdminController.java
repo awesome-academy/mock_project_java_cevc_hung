@@ -14,8 +14,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/admin")
 public class AdminController {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    public AdminController(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
     
     private void addAdminToModel(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

@@ -6,10 +6,14 @@ import com.mock_project_java_cevc_hung.hunglpmockjava.dto.request.LoginRequest;
 import com.mock_project_java_cevc_hung.hunglpmockjava.dto.request.RegisterRequest;
 import com.mock_project_java_cevc_hung.hunglpmockjava.dto.response.JwtResponse;
 import com.mock_project_java_cevc_hung.hunglpmockjava.entity.UserEntity;
+import com.mock_project_java_cevc_hung.hunglpmockjava.exception.EmailAlreadyExistsException;
+import com.mock_project_java_cevc_hung.hunglpmockjava.exception.GoogleAuthenticationException;
+import com.mock_project_java_cevc_hung.hunglpmockjava.exception.InvalidCredentialsException;
 import com.mock_project_java_cevc_hung.hunglpmockjava.repository.UserRepository;
 import com.mock_project_java_cevc_hung.hunglpmockjava.security.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,27 +39,31 @@ public class AuthService {
     GoogleOAuth2Service googleOAuth2Service;
 
     public JwtResponse authenticateUser(LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = jwtUtils.generateJwtToken(authentication);
 
-        UserEntity user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow();
-        
-        return JwtResponse.builder()
-                .token(jwt)
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .role(user.getRole().name())
-                .provider(user.getProvider().name())
-                .build();
+            UserEntity user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow();
+            
+            return JwtResponse.builder()
+                    .token(jwt)
+                    .id(user.getId())
+                    .name(user.getName())
+                    .email(user.getEmail())
+                    .role(user.getRole().name())
+                    .provider(user.getProvider().name())
+                    .build();
+        } catch (BadCredentialsException e) {
+            throw new InvalidCredentialsException();
+        }
     }
 
     public JwtResponse registerUser(RegisterRequest registerRequest) {
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
-            throw new RuntimeException("Error: Email is already in use!");
+            throw new EmailAlreadyExistsException(registerRequest.getEmail());
         }
 
         UserEntity user = UserEntity.builder()
@@ -88,7 +96,7 @@ public class AuthService {
         // Validate Google ID Token
         GoogleIdToken idToken = googleOAuth2Service.verifyToken(googleLoginRequest.getIdToken());
         if (idToken == null) {
-            throw new RuntimeException("Invalid Google ID token");
+            throw new GoogleAuthenticationException("Invalid Google ID token");
         }
 
         // Get user info from verified token
@@ -96,7 +104,7 @@ public class AuthService {
         String name = googleOAuth2Service.getNameFromToken(idToken);
         
         if (email == null || email.isEmpty()) {
-            throw new RuntimeException("Email not found in Google token");
+            throw new GoogleAuthenticationException("Email not found in Google token");
         }
 
         // Check if user exists

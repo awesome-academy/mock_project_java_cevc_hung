@@ -38,15 +38,15 @@ public class UserController {
             UserEntity user = userOpt.get();
             Map<String, Object> response = new HashMap<>();
             response.put("id", user.getId());
-            response.put("name", user.getName());
-            response.put("email", user.getEmail());
-            response.put("address", user.getAddress());
-            response.put("phone_number", user.getPhone_number());
-            response.put("role", user.getRole().name());
-            response.put("provider", user.getProvider().name());
+            response.put("name", user.getName() != null ? user.getName() : "");
+            response.put("email", user.getEmail() != null ? user.getEmail() : "");
+            response.put("address", user.getAddress() != null ? user.getAddress() : "");
+            response.put("phone_number", user.getPhone_number() != null ? user.getPhone_number() : "");
+            response.put("role", user.getRole() != null ? user.getRole().name() : "");
+            response.put("provider", user.getProvider() != null ? user.getProvider().name() : "");
             response.put("is_active", 1);
-            response.put("created_at", user.getCreatedAt());
-            response.put("updated_at", user.getUpdatedAt());
+            response.put("created_at", user.getCreatedAt() != null ? user.getCreatedAt() : "");
+            response.put("updated_at", user.getUpdatedAt() != null ? user.getUpdatedAt() : "");
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -93,6 +93,7 @@ public class UserController {
         }
     }
 
+    // FE clear jwt token cookie on logout
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
         return ResponseEntity.ok(Map.of("message", "Logout successful"));

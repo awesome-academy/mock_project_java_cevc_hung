@@ -1,7 +1,10 @@
 package com.mock_project_java_cevc_hung.hunglpmockjava.security;
 
+import com.mock_project_java_cevc_hung.hunglpmockjava.exception.JwtValidationException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,6 +15,8 @@ import java.util.Date;
 
 @Component
 public class JwtUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
     @Value("${app.jwt.secret}")
     private String jwtSecret;
@@ -46,7 +51,7 @@ public class JwtUtils {
                 .getSubject();
     }
 
-    public boolean validateJwtToken(String authToken) {
+    public boolean validateJwtToken(String authToken) throws JwtValidationException {
         try {
             Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
@@ -54,14 +59,20 @@ public class JwtUtils {
                 .parseClaimsJws(authToken);
             return true;
         } catch (MalformedJwtException e) {
-            System.err.println("Invalid JWT token: " + e.getMessage());
+            logger.warn("Invalid JWT token: {}", e.getMessage());
+            throw new JwtValidationException(JwtValidationException.JwtErrorType.MALFORMED, "Invalid JWT token format", e);
         } catch (ExpiredJwtException e) {
-            System.err.println("JWT token is expired: " + e.getMessage());
+            logger.warn("JWT token is expired: {}", e.getMessage());
+            throw new JwtValidationException(JwtValidationException.JwtErrorType.EXPIRED, "JWT token has expired", e);
         } catch (UnsupportedJwtException e) {
-            System.err.println("JWT token is unsupported: " + e.getMessage());
+            logger.warn("JWT token is unsupported: {}", e.getMessage());
+            throw new JwtValidationException(JwtValidationException.JwtErrorType.UNSUPPORTED, "JWT token format is not supported", e);
         } catch (IllegalArgumentException e) {
-            System.err.println("JWT claims string is empty: " + e.getMessage());
+            logger.warn("JWT claims string is empty: {}", e.getMessage());
+            throw new JwtValidationException(JwtValidationException.JwtErrorType.EMPTY_CLAIMS, "JWT claims string is empty", e);
+        } catch (SecurityException e) {
+            logger.warn("JWT signature validation failed: {}", e.getMessage());
+            throw new JwtValidationException(JwtValidationException.JwtErrorType.INVALID_SIGNATURE, "JWT signature validation failed", e);
         }
-        return false;
     }
 }
