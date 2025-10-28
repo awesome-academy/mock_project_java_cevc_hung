@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categories Management - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav th:replace="~{layouts/fragments :: sidebar(${activePage})}"></nav>
+            
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Categories Management</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a href="/admin/categories/create" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add New Category
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Flash Messages -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Filters -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <form method="get" action="/admin/categories">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="search" class="form-label">Search</label>
+                                    <input type="text" class="form-control" id="search" name="search" 
+                                           th:value="${search}" placeholder="Search by name">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="sortBy" class="form-label">Sort By</label>
+                                    <select class="form-select" id="sortBy" name="sortBy">
+                                        <option value="id" th:selected="${sortBy == 'id'}">ID</option>
+                                        <option value="name" th:selected="${sortBy == 'name'}">Name</option>
+                                        <option value="createdAt" th:selected="${sortBy == 'createdAt'}">Created Date</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="sortDir" class="form-label">Order</label>
+                                    <select class="form-select" id="sortDir" name="sortDir">
+                                        <option value="asc" th:selected="${sortDir == 'asc'}">Ascending</option>
+                                        <option value="desc" th:selected="${sortDir == 'desc'}">Descending</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="size" class="form-label">Items per page</label>
+                                    <select class="form-select" id="size" name="size">
+                                        <option value="5" th:selected="${size == 5}">5</option>
+                                        <option value="10" th:selected="${size == 10}">10</option>
+                                        <option value="20" th:selected="${size == 20}">20</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search"></i> Filter
+                                    </button>
+                                    <a href="/admin/categories" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Clear
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Categories Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            Categories List 
+                            <span class="badge bg-secondary" th:text="${totalItems}">0</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${categories.empty}" class="text-center py-5">
+                            <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No categories found</h4>
+                            <p class="text-muted">Start by creating your first category.</p>
+                            <a href="/admin/categories/create" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Create Category
+                            </a>
+                        </div>
+
+                        <div th:unless="${categories.empty}" class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Slug</th>
+                                        <th>Parent</th>
+                                        <th>Tours</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="category : ${categories}">
+                                        <td th:text="${category.id}">1</td>
+                                        <td>
+                                            <div class="fw-bold" th:text="${category.name}">Category Name</div>
+                                        </td>
+                                        <td>
+                                            <code th:text="${category.slug}">category-slug</code>
+                                        </td>
+                                        <td>
+                                            <span th:if="${category.parentName != null}" 
+                                                  class="badge bg-info" 
+                                                  th:text="${category.parentName}">Parent</span>
+                                            <span th:if="${category.parentName == null}" 
+                                                  class="text-muted">Root</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary" th:text="${category.tourCount}">0</span>
+                                        </td>
+                                        <td>
+                                            <small th:text="${#temporals.format(category.createdAt, 'dd/MM/yyyy')}">01/01/2024</small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a th:href="@{/admin/categories/{id}/edit(id=${category.id})}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <form th:action="@{/admin/categories/{id}/delete(id=${category.id})}" 
+                                                      method="post" class="d-inline"
+                                                      onsubmit="return confirm('Are you sure you want to delete this category?')">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div th:unless="${categories.empty}" class="d-flex justify-content-between align-items-center mt-4">
+                            <div>
+                                <span class="text-muted">
+                                    Showing <span th:text="${categories.number * categories.size + 1}">1</span> to 
+                                    <span th:text="${categories.number * categories.size + categories.numberOfElements}">10</span> of 
+                                    <span th:text="${categories.totalElements}">100</span> entries
+                                </span>
+                            </div>
+                            <nav>
+                                <ul class="pagination pagination-sm mb-0">
+                                    <li class="page-item" th:classappend="${!categories.hasPrevious()} ? 'disabled'">
+                                        <a class="page-link" th:href="@{/admin/categories(page=${categories.number - 1}, size=${categories.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}">Previous</a>
+                                    </li>
+                                    <li th:each="pageNum : ${#numbers.sequence(0, categories.totalPages - 1)}" 
+                                        class="page-item" 
+                                        th:classappend="${pageNum == categories.number} ? 'active'">
+                                        <a class="page-link" 
+                                           th:href="@{/admin/categories(page=${pageNum}, size=${categories.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}"
+                                           th:text="${pageNum + 1}">1</a>
+                                    </li>
+                                    <li class="page-item" th:classappend="${!categories.hasNext()} ? 'disabled'">
+                                        <a class="page-link" th:href="@{/admin/categories(page=${categories.number + 1}, size=${categories.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}">Next</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

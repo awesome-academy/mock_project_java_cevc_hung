@@ -52,7 +52,6 @@ public class TourService {
                 .description(request.getDescription())
                 .price(request.getPrice())
                 .location(request.getLocation())
-                .thumbnailUrl("https://via.placeholder.com/300x200?text=Tour+Image")
                 .seatsTotal(request.getSeatsTotal())
                 .seatsAvailable(request.getSeatsAvailable() != null ? request.getSeatsAvailable() : request.getSeatsTotal())
                 .startDate(request.getStartDate())

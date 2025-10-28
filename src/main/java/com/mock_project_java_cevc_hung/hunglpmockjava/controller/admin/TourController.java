@@ -33,13 +33,14 @@ public class TourController {
 
     @GetMapping("/tours")
     public String toursPage(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String search,
-            Model model) {
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "id") String sortBy,
+        @RequestParam(defaultValue = "desc") String sortDir,
+        @RequestParam(required = false) String status,
+        @RequestParam(required = false) String search,
+        Model model
+    ) {
         
         Sort sort = sortDir.equalsIgnoreCase("desc") ? 
                    Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();

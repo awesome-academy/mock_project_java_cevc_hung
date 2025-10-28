@@ -1,6 +1,7 @@
 package com.mock_project_java_cevc_hung.hunglpmockjava.controller;
 
 import com.mock_project_java_cevc_hung.hunglpmockjava.entity.UserEntity;
+import com.mock_project_java_cevc_hung.hunglpmockjava.repository.CategoryRepository;
 import com.mock_project_java_cevc_hung.hunglpmockjava.repository.TourRepository;
 import com.mock_project_java_cevc_hung.hunglpmockjava.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +18,12 @@ public class AdminController {
 
     private final UserRepository userRepository;
     private final TourRepository tourRepository;
+    private final CategoryRepository categoryRepository;
 
-    public AdminController(UserRepository userRepository, TourRepository tourRepository) {
+    public AdminController(UserRepository userRepository, TourRepository tourRepository, CategoryRepository categoryRepository) {
         this.userRepository = userRepository;
         this.tourRepository = tourRepository;
+        this.categoryRepository = categoryRepository;
     }
     
     private void addAdminToModel(Model model) {
@@ -54,11 +57,13 @@ public class AdminController {
         addAdminToModel(model);
         model.addAttribute("activePage", "dashboard");
         
-        // count all user
+        // count all entities
         long totalUsers = userRepository.count();
         long totalTours = tourRepository.count();
+        long totalCategories = categoryRepository.count();
         model.addAttribute("totalUsers", totalUsers);
         model.addAttribute("totalTours", totalTours);
+        model.addAttribute("totalCategories", totalCategories);
 
         return "admin/dashboard";
     }
