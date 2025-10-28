@@ -3,6 +3,7 @@ package com.mock_project_java_cevc_hung.hunglpmockjava.service;
 import com.mock_project_java_cevc_hung.hunglpmockjava.dto.request.TourCreateRequest;
 import com.mock_project_java_cevc_hung.hunglpmockjava.dto.request.TourUpdateRequest;
 import com.mock_project_java_cevc_hung.hunglpmockjava.dto.response.TourResponse;
+import com.mock_project_java_cevc_hung.hunglpmockjava.dto.response.api.ApiTourResponse;
 import com.mock_project_java_cevc_hung.hunglpmockjava.entity.CategoryEntity;
 import com.mock_project_java_cevc_hung.hunglpmockjava.entity.TourEntity;
 import com.mock_project_java_cevc_hung.hunglpmockjava.repository.CategoryRepository;
@@ -43,7 +44,6 @@ public class TourService {
     }
 
     public TourResponse createTour(TourCreateRequest request) {
-        // Validate category exists
         CategoryEntity category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found with id: " + request.getCategoryId()));
 
@@ -68,7 +68,6 @@ public class TourService {
         TourEntity tour = tourRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tour not found with id: " + id));
 
-        // Update fields
         tour.setTitle(request.getTitle());
         tour.setDescription(request.getDescription());
         tour.setPrice(request.getPrice());
@@ -112,26 +111,70 @@ public class TourService {
                 .collect(Collectors.toList());
     }
 
+    public Page<ApiTourResponse> getPublicTours(Long categoryId, String keyword, Pageable pageable) {
+        Page<TourEntity> tours;
+        
+        if (categoryId != null && keyword != null && !keyword.trim().isEmpty()) {
+            tours = tourRepository.findByCategoryIdAndTitleContainingIgnoreCaseAndStatus(categoryId, keyword, TourEntity.Status.ACTIVE, pageable);
+        } else if (categoryId != null) {
+            tours = tourRepository.findByCategoryIdAndStatus(categoryId, TourEntity.Status.ACTIVE, pageable);
+        } else if (keyword != null && !keyword.trim().isEmpty()) {
+            tours = tourRepository.findByTitleContainingIgnoreCaseAndStatus(keyword, TourEntity.Status.ACTIVE, pageable);
+        } else {
+            tours = tourRepository.findByStatus(TourEntity.Status.ACTIVE, pageable);
+        }
+        
+        return tours.map(this::convertToApiResponse);
+    }
+
+    public ApiTourResponse getPublicTourById(Long id) {
+        TourEntity tour = tourRepository.findByIdAndStatus(id, TourEntity.Status.ACTIVE)
+                .orElseThrow(() -> new RuntimeException("Tour not found with id: " + id));
+        return convertToApiResponse(tour);
+    }
+
     private TourResponse convertToResponse(TourEntity tour) {
         return TourResponse.builder()
-                .id(tour.getId())
-                .title(tour.getTitle())
-                .description(tour.getDescription())
-                .price(tour.getPrice())
-                .location(tour.getLocation())
-                .thumbnailUrl(tour.getThumbnailUrl())
-                .seatsTotal(tour.getSeatsTotal())
-                .seatsAvailable(tour.getSeatsAvailable())
-                .ratingAvg(tour.getRatingAvg())
-                .startDate(tour.getStartDate())
-                .endDate(tour.getEndDate())
-                .status(tour.getStatus())
-                .categoryName(tour.getCategory() != null ? tour.getCategory().getName() : null)
-                .categoryId(tour.getCategory() != null ? tour.getCategory().getId() : null)
-                .createdAt(tour.getCreatedAt())
-                .updatedAt(tour.getUpdatedAt())
-                .totalBookings(tour.getBookings() != null ? (long) tour.getBookings().size() : 0L)
-                .totalReviews(tour.getReviews() != null ? (long) tour.getReviews().size() : 0L)
-                .build();
+            .id(tour.getId())
+            .title(tour.getTitle())
+            .description(tour.getDescription())
+            .price(tour.getPrice())
+            .location(tour.getLocation())
+            .thumbnailUrl(tour.getThumbnailUrl())
+            .seatsTotal(tour.getSeatsTotal())
+            .seatsAvailable(tour.getSeatsAvailable())
+            .ratingAvg(tour.getRatingAvg())
+            .startDate(tour.getStartDate())
+            .endDate(tour.getEndDate())
+            .status(tour.getStatus())
+            .categoryName(tour.getCategory() != null ? tour.getCategory().getName() : null)
+            .categoryId(tour.getCategory() != null ? tour.getCategory().getId() : null)
+            .createdAt(tour.getCreatedAt())
+            .updatedAt(tour.getUpdatedAt())
+            .totalBookings(tour.getBookings() != null ? (long) tour.getBookings().size() : 0L)
+            .totalReviews(tour.getReviews() != null ? (long) tour.getReviews().size() : 0L)
+            .build();
+    }
+
+    private ApiTourResponse convertToApiResponse(TourEntity tour) {
+        return ApiTourResponse.builder()
+            .id(tour.getId())
+            .title(tour.getTitle())
+            .description(tour.getDescription())
+            .price(tour.getPrice())
+            .location(tour.getLocation())
+            .thumbnailUrl(tour.getThumbnailUrl())
+            .seatsTotal(tour.getSeatsTotal())
+            .seatsAvailable(tour.getSeatsAvailable())
+            .ratingAvg(tour.getRatingAvg())
+            .startDate(tour.getStartDate())
+            .endDate(tour.getEndDate())
+            .status(tour.getStatus().toString())
+            .categoryName(tour.getCategory() != null ? tour.getCategory().getName() : null)
+            .categoryId(tour.getCategory() != null ? tour.getCategory().getId() : null)
+            .createdAt(tour.getCreatedAt())
+            .totalBookings(tour.getBookings() != null ? (long) tour.getBookings().size() : 0L)
+            .totalReviews(tour.getReviews() != null ? (long) tour.getReviews().size() : 0L)
+            .build();
     }
 }

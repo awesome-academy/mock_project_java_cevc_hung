@@ -56,8 +56,8 @@ public class AdminController {
     public String dashboard(Model model) {
         addAdminToModel(model);
         model.addAttribute("activePage", "dashboard");
-        
-        // count all entities
+
+        // count for dashboard stats
         long totalUsers = userRepository.count();
         long totalTours = tourRepository.count();
         long totalCategories = categoryRepository.count();
