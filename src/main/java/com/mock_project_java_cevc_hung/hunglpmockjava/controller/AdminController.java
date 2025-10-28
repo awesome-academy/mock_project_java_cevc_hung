@@ -1,6 +1,7 @@
 package com.mock_project_java_cevc_hung.hunglpmockjava.controller;
 
 import com.mock_project_java_cevc_hung.hunglpmockjava.entity.UserEntity;
+import com.mock_project_java_cevc_hung.hunglpmockjava.repository.TourRepository;
 import com.mock_project_java_cevc_hung.hunglpmockjava.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -15,9 +16,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class AdminController {
 
     private final UserRepository userRepository;
+    private final TourRepository tourRepository;
 
-    public AdminController(UserRepository userRepository) {
+    public AdminController(UserRepository userRepository, TourRepository tourRepository) {
         this.userRepository = userRepository;
+        this.tourRepository = tourRepository;
     }
     
     private void addAdminToModel(Model model) {
@@ -53,8 +56,10 @@ public class AdminController {
         
         // count all user
         long totalUsers = userRepository.count();
+        long totalTours = tourRepository.count();
         model.addAttribute("totalUsers", totalUsers);
-        
+        model.addAttribute("totalTours", totalTours);
+
         return "admin/dashboard";
     }
 
@@ -66,11 +71,4 @@ public class AdminController {
         return "admin/users";
     }
 
-    @GetMapping("/tours")
-    public String tours(Model model) {
-        addAdminToModel(model);
-        model.addAttribute("activePage", "tours");
-        // TODO: Add tour repository and get tours
-        return "admin/tours";
-    }
 }
