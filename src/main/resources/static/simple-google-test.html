@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Google Login Test</title>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
+</head>
+<body>
+    <h1>Simple Google Login Test</h1>
+    
+    <div id="g_id_onload"
+         data-client_id="297220950189-tqmcvs1qmjrgi8lmor286nerh7pald8n.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse">
+    </div>
+    
+    <div class="g_id_signin" data-type="standard"></div>
+    
+    <div id="result" style="margin-top: 20px;"></div>
+    
+    <script>
+        function handleCredentialResponse(response) {
+            console.log("Encoded JWT ID token: " + response.credential);
+            
+            // Display info
+            document.getElementById('result').innerHTML = 
+                '<h3>Google Login Success!</h3>' +
+                '<p><strong>ID Token:</strong> ' + response.credential + '</p>' +
+                '<button onclick="testAPI(\'' + response.credential + '\')">Test API with Backend</button>';
+        }
+        
+        function testAPI(idToken) {
+            fetch('/api/auth/google', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    idToken: idToken
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('API Response:', data);
+                document.getElementById('result').innerHTML += 
+                    '<h3>Backend API Response:</h3>' +
+                    '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML += 
+                    '<h3>Error:</h3>' +
+                    '<p style="color: red;">' + error.message + '</p>';
+            });
+        }
+    </script>
+</body>
+</html>

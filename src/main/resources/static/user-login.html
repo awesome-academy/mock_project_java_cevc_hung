@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        .login-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .login-body {
+            padding: 2rem;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .google-btn {
+            background: #4285f4;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .google-btn:hover {
+            background: #3367d6;
+            transform: translateY(-2px);
+        }
+        .token-display {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .user-info {
+            background: #e3f2fd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="login-container">
+                    <div class="login-header">
+                        <h2><i class="fas fa-user-circle me-2"></i>User Login</h2>
+                        <p class="mb-0">Login to access your account</p>
+                    </div>
+                    <div class="login-body">
+                        <!-- Login Form -->
+                        <form id="loginForm">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" required>
+                            </div>
+                            <button type="submit" class="btn btn-login w-100 text-white">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login
+                            </button>
+                        </form>
+
+                        <!-- Register Form -->
+                        <div class="mt-4">
+                            <h5>New User? Register here:</h5>
+                            <form id="registerForm">
+                                <div class="mb-3">
+                                    <label for="regName" class="form-label">Name</label>
+                                    <input type="text" class="form-control" id="regName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="regEmail" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="regEmail" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="regPassword" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="regPassword" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="regAddress" class="form-label">Address</label>
+                                    <input type="text" class="form-control" id="regAddress" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="regPhone" class="form-label">Phone Number</label>
+                                    <input type="number" class="form-control" id="regPhone" required>
+                                </div>
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="fas fa-user-plus me-2"></i>Register
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Google Login -->
+                        <div class="mt-4">
+                            <h5>Or login with Google:</h5>
+                            <button class="btn google-btn w-100" onclick="loginWithGoogle()">
+                                <i class="fab fa-google me-2"></i>Login with Google
+                            </button>
+                        </div>
+
+                        <!-- Token Display -->
+                        <div id="tokenDisplay" class="token-display" style="display: none;">
+                            <h6>JWT Token:</h6>
+                            <div id="tokenValue"></div>
+                        </div>
+
+                        <!-- User Info -->
+                        <div id="userInfo" class="user-info" style="display: none;">
+                            <h6>User Information:</h6>
+                            <div id="userDetails"></div>
+                        </div>
+
+                        <!-- Test API Button -->
+                        <div class="mt-3">
+                            <button class="btn btn-info w-100" onclick="testProtectedAPI()" id="testApiBtn" style="display: none;">
+                                <i class="fas fa-flask me-2"></i>Test Protected API
+                            </button>
+                        </div>
+
+                        <!-- API Response -->
+                        <div id="apiResponse" class="mt-3" style="display: none;">
+                            <h6>API Response:</h6>
+                            <pre id="apiResponseText" class="bg-light p-3 rounded"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
+    <script>
+        let currentToken = null;
+        let currentUser = null;
+
+        // Login Form Handler
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentToken = data.token;
+                    currentUser = data;
+                    showTokenAndUserInfo();
+                    showSuccess('Login successful!');
+                } else {
+                    showError(data.message || 'Login failed');
+                }
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        });
+
+        // Register Form Handler
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const address = document.getElementById('regAddress').value;
+            const phone = document.getElementById('regPhone').value;
+            
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        name, 
+                        email, 
+                        password, 
+                        address, 
+                        phoneNumber: parseInt(phone) 
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentToken = data.token;
+                    currentUser = data;
+                    showTokenAndUserInfo();
+                    showSuccess('Registration successful!');
+                } else {
+                    showError(data.message || 'Registration failed');
+                }
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        });
+
+        // Google Login
+        function loginWithGoogle() {
+            // Initialize Google Sign-In
+            google.accounts.id.initialize({
+                client_id: '297220950189-tqmcvs1qmjrgi8lmor286nerh7pald8n.apps.googleusercontent.com',
+                callback: handleGoogleResponse
+            });
+            
+            google.accounts.id.prompt();
+        }
+
+        async function handleGoogleResponse(response) {
+            try {
+                const result = await fetch('/api/auth/google', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ idToken: response.credential })
+                });
+                
+                const data = await result.json();
+                
+                if (result.ok) {
+                    currentToken = data.token;
+                    currentUser = data;
+                    showTokenAndUserInfo();
+                    showSuccess('Google login successful!');
+                } else {
+                    showError(data.message || 'Google login failed');
+                }
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        // Test Protected API
+        async function testProtectedAPI() {
+            if (!currentToken) {
+                showError('Please login first');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/user/profile', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + currentToken,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                document.getElementById('apiResponse').style.display = 'block';
+                document.getElementById('apiResponseText').textContent = JSON.stringify(data, null, 2);
+                
+                if (response.ok) {
+                    showSuccess('Protected API call successful!');
+                } else {
+                    showError('API call failed: ' + data.message);
+                }
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        // Helper Functions
+        function showTokenAndUserInfo() {
+            document.getElementById('tokenDisplay').style.display = 'block';
+            document.getElementById('tokenValue').textContent = currentToken;
+            
+            document.getElementById('userInfo').style.display = 'block';
+            document.getElementById('userDetails').innerHTML = `
+                <strong>Name:</strong> ${currentUser.name}<br>
+                <strong>Email:</strong> ${currentUser.email}<br>
+                <strong>Role:</strong> ${currentUser.role}<br>
+                <strong>Provider:</strong> ${currentUser.provider}
+            `;
+            
+            document.getElementById('testApiBtn').style.display = 'block';
+        }
+
+        function showSuccess(message) {
+            alert(message);
+        }
+
+        function showError(message) {
+            alert(message);
+        }
+    </script>
+</body>
+</html>
