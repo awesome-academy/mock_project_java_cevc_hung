@@ -2,6 +2,32 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head></head>
 <body>
+    <!-- Head Fragment (meta, CSS) -->
+    <th:block th:fragment="head(title)">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title th:text="${title} + ' - Admin Panel'">Admin Panel</title>
+        <link th:href="@{/vendor/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+        <link th:href="@{/vendor/fontawesome/css/all.min.css}" rel="stylesheet">
+    </th:block>
+
+    <!-- Scripts Fragment -->
+    <th:block th:fragment="scripts">
+        <script th:src="@{/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+    </th:block>
+
+    <!-- Flash Messages Fragment -->
+    <th:block th:fragment="flash-messages">
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </th:block>
+
     <!-- Header Fragment -->
     <div th:fragment="header">
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">

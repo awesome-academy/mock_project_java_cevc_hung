@@ -1,11 +1,12 @@
 package com.mock_project_java_cevc_hung.hunglpmockjava.controller.admin;
 
+import com.mock_project_java_cevc_hung.hunglpmockjava.dto.request.AdminPageRequest;
 import com.mock_project_java_cevc_hung.hunglpmockjava.dto.request.TourCreateRequest;
 import com.mock_project_java_cevc_hung.hunglpmockjava.dto.request.TourUpdateRequest;
+import com.mock_project_java_cevc_hung.hunglpmockjava.dto.response.CategoryResponse;
 import com.mock_project_java_cevc_hung.hunglpmockjava.dto.response.TourResponse;
-import com.mock_project_java_cevc_hung.hunglpmockjava.entity.CategoryEntity;
 import com.mock_project_java_cevc_hung.hunglpmockjava.entity.TourEntity;
-import com.mock_project_java_cevc_hung.hunglpmockjava.repository.CategoryRepository;
+import com.mock_project_java_cevc_hung.hunglpmockjava.service.CategoryService;
 import com.mock_project_java_cevc_hung.hunglpmockjava.service.TourService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,60 +26,67 @@ import java.util.List;
 @RequestMapping("/admin")
 public class TourController {
 
-    @Autowired
-    private TourService tourService;
+    // Constants
+    private static final String BASE_PATH = "/admin/tours";
+    private static final String VIEW_BASE = "admin/tours/";
+    private static final String VIEW_INDEX = VIEW_BASE + "index";
+    private static final String VIEW_CREATE = VIEW_BASE + "tour-create";
+    private static final String VIEW_EDIT = VIEW_BASE + "tour-edit";
+    private static final String REDIRECT_TOURS = "redirect:" + BASE_PATH;
+    private static final String REDIRECT_CREATE = REDIRECT_TOURS + "/create";
+
+    private final TourService tourService;
+    private final CategoryService categoryService;
 
     @Autowired
-    private CategoryRepository categoryRepository;
+    public TourController(TourService tourService, CategoryService categoryService) {
+        this.tourService = tourService;
+        this.categoryService = categoryService;
+    }
 
     @GetMapping("/tours")
     public String toursPage(
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "id") String sortBy,
-        @RequestParam(defaultValue = "desc") String sortDir,
-        @RequestParam(required = false) String status,
-        @RequestParam(required = false) String search,
+        @ModelAttribute AdminPageRequest request,
         Model model
     ) {
         
-        Sort sort = sortDir.equalsIgnoreCase("desc") ? 
-                   Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Sort sort = request.getSortDir().equalsIgnoreCase("desc") ? 
+                   Sort.by(request.getSortBy()).descending() : Sort.by(request.getSortBy()).ascending();
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
         
         TourEntity.Status tourStatus = null;
-        if (status != null && !status.isEmpty()) {
+        if (request.getStatus() != null && !request.getStatus().isEmpty()) {
             try {
-                tourStatus = TourEntity.Status.valueOf(status.toUpperCase());
+                tourStatus = TourEntity.Status.valueOf(request.getStatus().toUpperCase());
             } catch (IllegalArgumentException e) {
                 // Invalid status, use null
             }
         }
         
-        Page<TourResponse> tours = tourService.getToursWithFilters(tourStatus, search, pageable);
-        List<CategoryEntity> categories = categoryRepository.findAll();
+        Page<TourResponse> tours = tourService.getToursWithFilters(tourStatus, request.getSearch(), pageable);
+        List<CategoryResponse> categories = categoryService.getAllCategoriesAsList();
         
         model.addAttribute("tours", tours);
         model.addAttribute("categories", categories);
-        model.addAttribute("currentPage", page);
+        model.addAttribute("currentPage", request.getPage());
         model.addAttribute("totalPages", tours.getTotalPages());
         model.addAttribute("totalItems", tours.getTotalElements());
-        model.addAttribute("sortBy", sortBy);
-        model.addAttribute("sortDir", sortDir);
-        model.addAttribute("status", status);
-        model.addAttribute("search", search);
-        model.addAttribute("activePage", "tours");
+        model.addAttribute("sortBy", request.getSortBy());
+        model.addAttribute("sortDir", request.getSortDir());
+        model.addAttribute("status", request.getStatus());
+        model.addAttribute("search", request.getSearch());
+        model.addAttribute(AdminConstants.ATTR_ACTIVE_PAGE, AdminConstants.ACTIVE_PAGE_TOURS);
         
-        return "admin/tours/index";
+        return VIEW_INDEX;
     }
 
     @GetMapping("/tours/create")
     public String createTourPage(Model model) {
-        List<CategoryEntity> categories = categoryRepository.findAll();
+        List<CategoryResponse> categories = categoryService.getAllCategoriesAsList();
         model.addAttribute("tourCreateRequest", new TourCreateRequest());
         model.addAttribute("categories", categories);
-        model.addAttribute("activePage", "tours");
-        return "admin/tours/tour-create";
+        model.addAttribute(AdminConstants.ATTR_ACTIVE_PAGE, AdminConstants.ACTIVE_PAGE_TOURS);
+        return VIEW_CREATE;
     }
 
     @PostMapping("/tours/create")
@@ -89,19 +97,19 @@ public class TourController {
             Model model
     ) {
         if (result.hasErrors()) {
-            List<CategoryEntity> categories = categoryRepository.findAll();
+            List<CategoryResponse> categories = categoryService.getAllCategoriesAsList();
             model.addAttribute("categories", categories);
-            model.addAttribute("activePage", "tours");
-            return "admin/tours/tour-create";
+            model.addAttribute(AdminConstants.ATTR_ACTIVE_PAGE, AdminConstants.ACTIVE_PAGE_TOURS);
+            return VIEW_CREATE;
         }
         
         try {
             tourService.createTour(request);
-            redirectAttributes.addFlashAttribute("success", "Tour created successfully!");
-            return "redirect:/admin/tours";
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_SUCCESS, "Tour created successfully!");
+            return REDIRECT_TOURS;
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error creating tour: " + e.getMessage());
-            return "redirect:/admin/tours/create";
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "Error creating tour: " + e.getMessage());
+            return REDIRECT_CREATE;
         }
     }
 
@@ -109,7 +117,7 @@ public class TourController {
     public String editTourPage(@PathVariable Long id, Model model) {
         try {
             TourResponse tour = tourService.getTourById(id);
-            List<CategoryEntity> categories = categoryRepository.findAll();
+            List<CategoryResponse> categories = categoryService.getAllCategoriesAsList();
             
             TourUpdateRequest updateRequest = TourUpdateRequest.builder()
                 .title(tour.getTitle())
@@ -126,10 +134,10 @@ public class TourController {
             model.addAttribute("tourUpdateRequest", updateRequest);
             model.addAttribute("tour", tour);
             model.addAttribute("categories", categories);
-            model.addAttribute("activePage", "tours");
-            return "admin/tours/tour-edit";
+            model.addAttribute(AdminConstants.ATTR_ACTIVE_PAGE, AdminConstants.ACTIVE_PAGE_TOURS);
+            return VIEW_EDIT;
         } catch (Exception e) {
-            return "redirect:/admin/tours?error=" + e.getMessage();
+            return REDIRECT_TOURS + "?error=" + e.getMessage();
         }
     }
 
@@ -143,23 +151,23 @@ public class TourController {
         if (result.hasErrors()) {
             try {
                 TourResponse tour = tourService.getTourById(id);
-                List<CategoryEntity> categories = categoryRepository.findAll();
+                List<CategoryResponse> categories = categoryService.getAllCategoriesAsList();
                 model.addAttribute("tour", tour);
                 model.addAttribute("categories", categories);
-                model.addAttribute("activePage", "tours");
-                return "admin/tours/tour-edit";
+                model.addAttribute(AdminConstants.ATTR_ACTIVE_PAGE, AdminConstants.ACTIVE_PAGE_TOURS);
+                return VIEW_EDIT;
             } catch (Exception e) {
-                return "redirect:/admin/tours?error=" + e.getMessage();
+                return REDIRECT_TOURS + "?error=" + e.getMessage();
             }
         }
         
         try {
             tourService.updateTour(id, request);
-            redirectAttributes.addFlashAttribute("success", "Tour updated successfully!");
-            return "redirect:/admin/tours";
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_SUCCESS, "Tour updated successfully!");
+            return REDIRECT_TOURS;
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error updating tour: " + e.getMessage());
-            return "redirect:/admin/tours/" + id + "/edit";
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "Error updating tour: " + e.getMessage());
+            return REDIRECT_TOURS + "/" + id + "/edit";
         }
     }
 
@@ -167,21 +175,21 @@ public class TourController {
     public String deleteTour(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             tourService.deleteTour(id);
-            redirectAttributes.addFlashAttribute("success", "Tour deleted successfully!");
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_SUCCESS, "Tour deleted successfully!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error deleting tour: " + e.getMessage());
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "Error deleting tour: " + e.getMessage());
         }
-        return "redirect:/admin/tours";
+        return REDIRECT_TOURS;
     }
 
     @PostMapping("/tours/{id}/toggle-status")
     public String toggleTourStatus(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             tourService.toggleTourStatus(id);
-            redirectAttributes.addFlashAttribute("success", "Tour status updated successfully!");
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_SUCCESS, "Tour status updated successfully!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error updating tour status: " + e.getMessage());
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "Error updating tour status: " + e.getMessage());
         }
-        return "redirect:/admin/tours";
+        return REDIRECT_TOURS;
     }
 }

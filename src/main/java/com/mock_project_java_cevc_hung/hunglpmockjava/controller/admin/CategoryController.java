@@ -1,10 +1,15 @@
 package com.mock_project_java_cevc_hung.hunglpmockjava.controller.admin;
 
 import com.mock_project_java_cevc_hung.hunglpmockjava.dto.request.CategoryCreateRequest;
+import com.mock_project_java_cevc_hung.hunglpmockjava.dto.request.AdminPageRequest;
 import com.mock_project_java_cevc_hung.hunglpmockjava.dto.request.CategoryUpdateRequest;
 import com.mock_project_java_cevc_hung.hunglpmockjava.dto.response.CategoryResponse;
+import com.mock_project_java_cevc_hung.hunglpmockjava.exception.BusinessException;
+import com.mock_project_java_cevc_hung.hunglpmockjava.exception.ResourceNotFoundException;
 import com.mock_project_java_cevc_hung.hunglpmockjava.service.CategoryService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,36 +27,48 @@ import java.util.List;
 @RequestMapping("/admin")
 public class CategoryController {
 
+    private static final Logger logger = LoggerFactory.getLogger(CategoryController.class);
+
+    // Constants
+    private static final String BASE_PATH = "/admin/categories";
+    private static final String VIEW_BASE = "admin/categories/";
+    private static final String VIEW_INDEX = VIEW_BASE + "index";
+    private static final String VIEW_CREATE = VIEW_BASE + "create";
+    private static final String VIEW_EDIT = VIEW_BASE + "edit";
+    private static final String REDIRECT_CATEGORIES = "redirect:" + BASE_PATH;
+    private static final String REDIRECT_CREATE = REDIRECT_CATEGORIES + "/create";
+
+    private final CategoryService categoryService;
+
     @Autowired
-    private CategoryService categoryService;
+    public CategoryController(CategoryService categoryService) {
+        this.categoryService = categoryService;
+    }
 
     @GetMapping("/categories")
     public String categoriesPage(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir,
-            @RequestParam(required = false) String search,
-            Model model) {
+        @ModelAttribute AdminPageRequest request,
+        Model model
+    ) {
         
-        Sort sort = sortDir.equalsIgnoreCase("desc") ? 
-                   Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Sort sort = request.getSortDir().equalsIgnoreCase("desc") ? 
+                   Sort.by(request.getSortBy()).descending() : Sort.by(request.getSortBy()).ascending();
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
         
-        Page<CategoryResponse> categories = categoryService.getAllCategories(pageable);
+        Page<CategoryResponse> categories = categoryService.getAllCategories(request.getSearch(), pageable);
         List<CategoryResponse> parentCategories = categoryService.getParentCategories();
         
         model.addAttribute("categories", categories);
         model.addAttribute("parentCategories", parentCategories);
-        model.addAttribute("currentPage", page);
+        model.addAttribute("currentPage", request.getPage());
         model.addAttribute("totalPages", categories.getTotalPages());
         model.addAttribute("totalItems", categories.getTotalElements());
-        model.addAttribute("sortBy", sortBy);
-        model.addAttribute("sortDir", sortDir);
-        model.addAttribute("search", search);
-        model.addAttribute("activePage", "categories");
+        model.addAttribute("sortBy", request.getSortBy());
+        model.addAttribute("sortDir", request.getSortDir());
+        model.addAttribute("search", request.getSearch());
+        model.addAttribute(AdminConstants.ATTR_ACTIVE_PAGE, AdminConstants.ACTIVE_PAGE_CATEGORIES);
         
-        return "admin/categories/index";
+        return VIEW_INDEX;
     }
 
     @GetMapping("/categories/create")
@@ -59,8 +76,8 @@ public class CategoryController {
         List<CategoryResponse> parentCategories = categoryService.getParentCategories();
         model.addAttribute("categoryCreateRequest", new CategoryCreateRequest());
         model.addAttribute("parentCategories", parentCategories);
-        model.addAttribute("activePage", "categories");
-        return "admin/categories/create";
+        model.addAttribute(AdminConstants.ATTR_ACTIVE_PAGE, AdminConstants.ACTIVE_PAGE_CATEGORIES);
+        return VIEW_CREATE;
     }
 
     @PostMapping("/categories/create")
@@ -73,22 +90,31 @@ public class CategoryController {
         if (result.hasErrors()) {
             List<CategoryResponse> parentCategories = categoryService.getParentCategories();
             model.addAttribute("parentCategories", parentCategories);
-            model.addAttribute("activePage", "categories");
-            return "admin/categories/create";
+            model.addAttribute(AdminConstants.ATTR_ACTIVE_PAGE, AdminConstants.ACTIVE_PAGE_CATEGORIES);
+            return VIEW_CREATE;
         }
         
         try {
             categoryService.createCategory(request);
-            redirectAttributes.addFlashAttribute("success", "Category created successfully!");
-            return "redirect:/admin/categories";
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_SUCCESS, "Category created successfully!");
+            return REDIRECT_CATEGORIES;
+        } catch (BusinessException e) {
+            logger.warn("Business exception while creating category: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, e.getMessage());
+            return REDIRECT_CREATE;
+        } catch (ResourceNotFoundException e) {
+            logger.warn("Resource not found while creating category: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, e.getMessage());
+            return REDIRECT_CREATE;
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error creating category: " + e.getMessage());
-            return "redirect:/admin/categories/create";
+            logger.error("Unexpected error while creating category: {}", e.getMessage(), e);
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "Error creating category: " + e.getMessage());
+            return REDIRECT_CREATE;
         }
     }
 
     @GetMapping("/categories/{id}/edit")
-    public String editCategoryPage(@PathVariable Long id, Model model) {
+    public String editCategoryPage(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         try {
             CategoryResponse category = categoryService.getCategoryById(id);
             List<CategoryResponse> parentCategories = categoryService.getParentCategories();
@@ -102,10 +128,14 @@ public class CategoryController {
             model.addAttribute("categoryUpdateRequest", updateRequest);
             model.addAttribute("category", category);
             model.addAttribute("parentCategories", parentCategories);
-            model.addAttribute("activePage", "categories");
-            return "admin/categories/edit";
+            model.addAttribute(AdminConstants.ATTR_ACTIVE_PAGE, AdminConstants.ACTIVE_PAGE_CATEGORIES);
+            return VIEW_EDIT;
+        } catch (ResourceNotFoundException e) {
+            logger.warn("Category not found with id: {}", id);
+            return "redirect:" + REDIRECT_CATEGORIES;
         } catch (Exception e) {
-            return "redirect:/admin/categories?error=" + e.getMessage();
+            logger.error("Error loading edit category page for id {}: {}", id, e.getMessage(), e);
+            return "redirect:" + REDIRECT_CATEGORIES;
         }
     }
 
@@ -122,20 +152,35 @@ public class CategoryController {
                 List<CategoryResponse> parentCategories = categoryService.getParentCategories();
                 model.addAttribute("category", category);
                 model.addAttribute("parentCategories", parentCategories);
-                model.addAttribute("activePage", "categories");
-                return "admin/categories/edit";
+                model.addAttribute(AdminConstants.ATTR_ACTIVE_PAGE, AdminConstants.ACTIVE_PAGE_CATEGORIES);
+                return VIEW_EDIT;
+            } catch (ResourceNotFoundException e) {
+                logger.warn("Category not found with id: {}", id);
+                redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, e.getMessage());
+                return "redirect:" + REDIRECT_CATEGORIES;
             } catch (Exception e) {
-                return "redirect:/admin/categories?error=" + e.getMessage();
+                logger.error("Error loading edit category page for id {}: {}", id, e.getMessage(), e);
+                redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "Error loading category: " + e.getMessage());
+                return "redirect:" + REDIRECT_CATEGORIES;
             }
         }
         
         try {
             categoryService.updateCategory(id, request);
-            redirectAttributes.addFlashAttribute("success", "Category updated successfully!");
-            return "redirect:/admin/categories";
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_SUCCESS, "Category updated successfully!");
+            return REDIRECT_CATEGORIES;
+        } catch (ResourceNotFoundException e) {
+            logger.warn("Category not found while updating id {}: {}", id, e.getMessage());
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, e.getMessage());
+            return REDIRECT_CATEGORIES;
+        } catch (BusinessException e) {
+            logger.warn("Business exception while updating category id {}: {}", id, e.getMessage());
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, e.getMessage());
+            return REDIRECT_CATEGORIES + "/" + id + "/edit";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error updating category: " + e.getMessage());
-            return "redirect:/admin/categories/" + id + "/edit";
+            logger.error("Unexpected error while updating category id {}: {}", id, e.getMessage(), e);
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "Error updating category: " + e.getMessage());
+            return REDIRECT_CATEGORIES + "/" + id + "/edit";
         }
     }
 
@@ -143,10 +188,17 @@ public class CategoryController {
     public String deleteCategory(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             categoryService.deleteCategory(id);
-            redirectAttributes.addFlashAttribute("success", "Category deleted successfully!");
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_SUCCESS, "Category deleted successfully!");
+        } catch (ResourceNotFoundException e) {
+            logger.warn("Category not found while deleting id {}: {}", id, e.getMessage());
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, e.getMessage());
+        } catch (BusinessException e) {
+            logger.warn("Business exception while deleting category id {}: {}", id, e.getMessage());
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, e.getMessage());
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error deleting category: " + e.getMessage());
+            logger.error("Unexpected error while deleting category id {}: {}", id, e.getMessage(), e);
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "Error deleting category: " + e.getMessage());
         }
-        return "redirect:/admin/categories";
+        return REDIRECT_CATEGORIES;
     }
 }
