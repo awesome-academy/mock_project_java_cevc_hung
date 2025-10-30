@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layouts/fragments :: head(title='Create Tour')}"></head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav th:replace="~{layouts/fragments :: sidebar(${activePage})}"></nav>
+            
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Create New Tour</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a href="/admin/tours" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Tours
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Flash Messages -->
+                <div th:replace="~{layouts/fragments :: flash-messages}"></div>
+
+                <!-- Create Tour Form -->
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Tour Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <form th:action="@{/admin/tours/create}" th:object="${tourCreateRequest}" method="post">
+                                    <div class="row g-3">
+                                        <!-- Title -->
+                                        <div class="col-md-12">
+                                            <label for="title" class="form-label">Title <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="title" th:field="*{title}" 
+                                                   placeholder="Enter tour title" required>
+                                            <div th:if="${#fields.hasErrors('title')}" class="text-danger">
+                                                <span th:errors="*{title}"></span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Description -->
+                                        <div class="col-md-12">
+                                            <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+                                            <textarea class="form-control" id="description" th:field="*{description}" 
+                                                      rows="4" placeholder="Enter tour description" required></textarea>
+                                            <div th:if="${#fields.hasErrors('description')}" class="text-danger">
+                                                <span th:errors="*{description}"></span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Price -->
+                                        <div class="col-md-6">
+                                            <label for="price" class="form-label">Price (VND) <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control" id="price" th:field="*{price}" 
+                                                   min="0" step="1000" placeholder="Enter price" required>
+                                            <div th:if="${#fields.hasErrors('price')}" class="text-danger">
+                                                <span th:errors="*{price}"></span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Location -->
+                                        <div class="col-md-6">
+                                            <label for="location" class="form-label">Location <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="location" th:field="*{location}" 
+                                                   placeholder="Enter location" required>
+                                            <div th:if="${#fields.hasErrors('location')}" class="text-danger">
+                                                <span th:errors="*{location}"></span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Category -->
+                                        <div class="col-md-6">
+                                            <label for="categoryId" class="form-label">Category <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="categoryId" th:field="*{categoryId}" required>
+                                                <option value="">Select a category</option>
+                                                <option th:each="category : ${categories}" 
+                                                        th:value="${category.id}" 
+                                                        th:text="${category.name}">Category</option>
+                                            </select>
+                                            <div th:if="${#fields.hasErrors('categoryId')}" class="text-danger">
+                                                <span th:errors="*{categoryId}"></span>
+                                            </div>
+                                        </div>
+
+
+                                        <!-- Seats Total -->
+                                        <div class="col-md-6">
+                                            <label for="seatsTotal" class="form-label">Total Seats <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control" id="seatsTotal" th:field="*{seatsTotal}" 
+                                                   min="1" placeholder="Enter total seats" required>
+                                            <div th:if="${#fields.hasErrors('seatsTotal')}" class="text-danger">
+                                                <span th:errors="*{seatsTotal}"></span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Seats Available -->
+                                        <div class="col-md-6">
+                                            <label for="seatsAvailable" class="form-label">Available Seats</label>
+                                            <input type="number" class="form-control" id="seatsAvailable" th:field="*{seatsAvailable}" 
+                                                   min="0" placeholder="Enter available seats">
+                                            <div class="form-text">Leave empty to use total seats</div>
+                                            <div th:if="${#fields.hasErrors('seatsAvailable')}" class="text-danger">
+                                                <span th:errors="*{seatsAvailable}"></span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Start Date -->
+                                        <div class="col-md-6">
+                                            <label for="startDate" class="form-label">Start Date</label>
+                                            <input type="datetime-local" class="form-control" id="startDate" th:field="*{startDate}">
+                                            <div th:if="${#fields.hasErrors('startDate')}" class="text-danger">
+                                                <span th:errors="*{startDate}"></span>
+                                            </div>
+                                        </div>
+
+                                        <!-- End Date -->
+                                        <div class="col-md-6">
+                                            <label for="endDate" class="form-label">End Date</label>
+                                            <input type="datetime-local" class="form-control" id="endDate" th:field="*{endDate}">
+                                            <div th:if="${#fields.hasErrors('endDate')}" class="text-danger">
+                                                <span th:errors="*{endDate}"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mt-4">
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-save"></i> Create Tour
+                                            </button>
+                                            <a href="/admin/tours" class="btn btn-secondary">
+                                                <i class="fas fa-times"></i> Cancel
+                                            </a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preview -->
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Preview</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center">
+                                    <img id="previewImage" src="https://via.placeholder.com/300x200?text=No+Image" 
+                                         class="img-fluid rounded mb-3" style="max-height: 200px;">
+                                    <h5 id="previewTitle" class="card-title">Tour Title</h5>
+                                    <p id="previewDescription" class="card-text text-muted">Tour description will appear here...</p>
+                                    <div class="row text-center">
+                                        <div class="col-6">
+                                            <small class="text-muted">Price</small>
+                                            <div id="previewPrice" class="fw-bold text-success">0 VND</div>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Location</small>
+                                            <div id="previewLocation" class="fw-bold">Location</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="~{layouts/fragments :: scripts}"></div>
+    <script>
+        // Preview functionality
+        document.getElementById('title').addEventListener('input', function() {
+            document.getElementById('previewTitle').textContent = this.value || 'Tour Title';
+        });
+
+        document.getElementById('description').addEventListener('input', function() {
+            document.getElementById('previewDescription').textContent = this.value || 'Tour description will appear here...';
+        });
+
+        document.getElementById('price').addEventListener('input', function() {
+            const price = this.value ? parseInt(this.value).toLocaleString() : '0';
+            document.getElementById('previewPrice').textContent = price + ' VND';
+        });
+
+        document.getElementById('location').addEventListener('input', function() {
+            document.getElementById('previewLocation').textContent = this.value || 'Location';
+        });
+
+        document.getElementById('thumbnailUrl').addEventListener('input', function() {
+            const img = document.getElementById('previewImage');
+            if (this.value) {
+                img.src = this.value;
+            } else {
+                img.src = 'https://via.placeholder.com/300x200?text=No+Image';
+            }
+        });
+
+        // Auto-fill available seats with total seats
+        document.getElementById('seatsTotal').addEventListener('input', function() {
+            const availableInput = document.getElementById('seatsAvailable');
+            if (!availableInput.value) {
+                availableInput.value = this.value;
+            }
+        });
+    </script>
+</body>
+</html>

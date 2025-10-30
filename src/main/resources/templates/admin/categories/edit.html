@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layouts/fragments :: head(title='Edit Category')}"></head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav th:replace="~{layouts/fragments :: sidebar(${activePage})}"></nav>
+            
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Edit Category</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a href="/admin/categories" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Categories
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Flash Messages -->
+                <div th:replace="~{layouts/fragments :: flash-messages}"></div>
+
+                <!-- Edit Category Form -->
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Category Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <form th:action="@{/admin/categories/{id}/edit(id=${category.id})}" 
+                                      th:object="${categoryUpdateRequest}" 
+                                      method="post">
+                                    
+                                    <!-- Name -->
+                                    <div class="mb-3">
+                                        <label for="name" class="form-label">Category Name <span class="text-danger">*</span></label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="name" 
+                                               th:field="*{name}"
+                                               placeholder="Enter category name">
+                                        <div th:if="${#fields.hasErrors('name')}" class="text-danger">
+                                            <small th:errors="*{name}"></small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Slug -->
+                                    <div class="mb-3">
+                                        <label for="slug" class="form-label">Slug</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="slug" 
+                                               th:field="*{slug}"
+                                               placeholder="category-slug">
+                                        <div class="form-text">URL-friendly version of the name</div>
+                                        <div th:if="${#fields.hasErrors('slug')}" class="text-danger">
+                                            <small th:errors="*{slug}"></small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Parent Category -->
+                                    <div class="mb-3">
+                                        <label for="parentId" class="form-label">Parent Category</label>
+                                        <select class="form-select" id="parentId" th:field="*{parentId}">
+                                            <option value="">No Parent (Root Category)</option>
+                                            <option th:each="parent : ${parentCategories}" 
+                                                    th:value="${parent.id}" 
+                                                    th:selected="${parent.id == categoryUpdateRequest.parentId}"
+                                                    th:text="${parent.name}">Parent Category</option>
+                                        </select>
+                                        <div th:if="${#fields.hasErrors('parentId')}" class="text-danger">
+                                            <small th:errors="*{parentId}"></small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Submit Buttons -->
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save"></i> Update Category
+                                        </button>
+                                        <a href="/admin/categories" class="btn btn-secondary">
+                                            <i class="fas fa-times"></i> Cancel
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Info Card -->
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="card-title mb-0">
+                                    <i class="fas fa-info-circle"></i> Category Details
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <strong>ID:</strong>
+                                    <span th:text="${category.id}">1</span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Current Name:</strong>
+                                    <div th:text="${category.name}">Category Name</div>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Current Slug:</strong>
+                                    <code th:text="${category.slug}">category-slug</code>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Parent:</strong>
+                                    <div th:if="${category.parentName != null}" 
+                                         class="badge bg-info" 
+                                         th:text="${category.parentName}">Parent</div>
+                                    <div th:if="${category.parentName == null}" 
+                                         class="text-muted">Root Category</div>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Tours:</strong>
+                                    <span class="badge bg-primary" th:text="${category.tourCount}">0</span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Created:</strong>
+                                    <div th:text="${#temporals.format(category.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</div>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Updated:</strong>
+                                    <div th:text="${#temporals.format(category.updatedAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="~{layouts/fragments :: scripts}"></div>
+    <script>
+        // Auto-generate slug from name
+        document.getElementById('name').addEventListener('input', function() {
+            const name = this.value;
+            const slug = name.toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .trim('-');
+            
+            const slugField = document.getElementById('slug');
+            if (slugField.value === '') {
+                slugField.value = slug;
+            }
+        });
+    </script>
+</body>
+</html>
