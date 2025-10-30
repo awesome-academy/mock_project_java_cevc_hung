@@ -30,3 +30,9 @@ google:
   oauth2:
     client-id: xxxxxx
     client-secret: xxxxxx
+
+springdoc:
+    api-docs:
+      path: /api-docs
+    swagger-ui:
+      path: /swagger-ui.html
