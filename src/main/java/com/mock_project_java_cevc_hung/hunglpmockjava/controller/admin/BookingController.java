@@ -6,7 +6,11 @@ import com.mock_project_java_cevc_hung.hunglpmockjava.dto.response.BookingRespon
 import com.mock_project_java_cevc_hung.hunglpmockjava.entity.BookingEntity;
 import com.mock_project_java_cevc_hung.hunglpmockjava.service.BookingService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +25,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("admin/bookings")
 public class BookingController {
 
+    private static final Logger logger = LoggerFactory.getLogger(BookingController.class);
+
     // Constants
     private static final String BASE_PATH = "/admin/bookings";
     private static final String VIEW_BASE = "admin/bookings/";
@@ -29,10 +35,24 @@ public class BookingController {
     private static final String REDIRECT_BOOKINGS = "redirect:" + BASE_PATH;
 
     private final BookingService bookingService;
+    private final MessageSource messageSource;
 
     @Autowired
-    public BookingController(BookingService bookingService) {
+    public BookingController(BookingService bookingService, MessageSource messageSource) {
         this.bookingService = bookingService;
+        this.messageSource = messageSource;
+    }
+    
+    private void addErrorFlash(RedirectAttributes redirectAttributes, String message) {
+        redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, message);
+    }
+    
+    private void addSuccessFlash(RedirectAttributes redirectAttributes, String message) {
+        redirectAttributes.addFlashAttribute(AdminConstants.ATTR_SUCCESS, message);
+    }
+    
+    private String getMessage(String code, Object... args) {
+        return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
     }
 
     @GetMapping("")
@@ -73,7 +93,8 @@ public class BookingController {
             model.addAttribute(AdminConstants.ATTR_ACTIVE_PAGE, AdminConstants.ACTIVE_PAGE_BOOKINGS);
             return VIEW_EDIT;
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "Error loading booking: " + e.getMessage());
+            logger.error("Error loading edit booking page for id {}: {}", id, e.getMessage(), e);
+            addErrorFlash(redirectAttributes, getMessage(AdminConstants.MSG_BOOKING_LOAD_ERROR, e.getMessage()));
             return REDIRECT_BOOKINGS;
         }
     }
@@ -93,17 +114,19 @@ public class BookingController {
                 model.addAttribute(AdminConstants.ATTR_ACTIVE_PAGE, AdminConstants.ACTIVE_PAGE_BOOKINGS);
                 return VIEW_EDIT;
             } catch (Exception e) {
-                redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "Error loading booking: " + e.getMessage());
+                logger.error("Error loading edit booking page for id {}: {}", id, e.getMessage(), e);
+                addErrorFlash(redirectAttributes, getMessage(AdminConstants.MSG_BOOKING_LOAD_ERROR, e.getMessage()));
                 return REDIRECT_BOOKINGS;
             }
         }
         
         try {
             bookingService.updateBooking(id, request);
-            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_SUCCESS, "Booking updated successfully!");
+            addSuccessFlash(redirectAttributes, getMessage(AdminConstants.MSG_BOOKING_UPDATE_SUCCESS));
             return REDIRECT_BOOKINGS;
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "Error updating booking: " + e.getMessage());
+            logger.error("Error updating booking id {}: {}", id, e.getMessage(), e);
+            addErrorFlash(redirectAttributes, getMessage(AdminConstants.MSG_BOOKING_UPDATE_ERROR, e.getMessage()));
             return REDIRECT_BOOKINGS + "/" + id + "/edit";
         }
     }
@@ -112,9 +135,10 @@ public class BookingController {
     public String deleteBooking(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             bookingService.deleteBooking(id);
-            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_SUCCESS, "Booking deleted successfully!");
+            addSuccessFlash(redirectAttributes, getMessage(AdminConstants.MSG_BOOKING_DELETE_SUCCESS));
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "Error deleting booking: " + e.getMessage());
+            logger.error("Error deleting booking id {}: {}", id, e.getMessage(), e);
+            addErrorFlash(redirectAttributes, getMessage(AdminConstants.MSG_BOOKING_DELETE_ERROR, e.getMessage()));
         }
         return REDIRECT_BOOKINGS;
     }
@@ -123,9 +147,10 @@ public class BookingController {
     public String cancelBooking(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             bookingService.cancelBooking(id);
-            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_SUCCESS, "Booking cancelled successfully!");
+            addSuccessFlash(redirectAttributes, getMessage(AdminConstants.MSG_BOOKING_CANCEL_SUCCESS));
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "Error cancelling booking: " + e.getMessage());
+            logger.error("Error cancelling booking id {}: {}", id, e.getMessage(), e);
+            addErrorFlash(redirectAttributes, getMessage(AdminConstants.MSG_BOOKING_CANCEL_ERROR, e.getMessage()));
         }
         return REDIRECT_BOOKINGS;
     }
@@ -139,9 +164,13 @@ public class BookingController {
         try {
             BookingEntity.Status newStatus = BookingEntity.Status.valueOf(status.toUpperCase());
             bookingService.toggleBookingStatus(id, newStatus);
-            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_SUCCESS, "Booking status updated successfully!");
+            addSuccessFlash(redirectAttributes, getMessage(AdminConstants.MSG_BOOKING_STATUS_UPDATE_SUCCESS));
+        } catch (IllegalArgumentException e) {
+            logger.warn("Invalid status value: {}", status);
+            addErrorFlash(redirectAttributes, getMessage(AdminConstants.MSG_BOOKING_STATUS_INVALID, status));
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "Error updating booking status: " + e.getMessage());
+            logger.error("Error updating booking status id {}: {}", id, e.getMessage(), e);
+            addErrorFlash(redirectAttributes, getMessage(AdminConstants.MSG_BOOKING_STATUS_UPDATE_ERROR, e.getMessage()));
         }
         return REDIRECT_BOOKINGS;
     }

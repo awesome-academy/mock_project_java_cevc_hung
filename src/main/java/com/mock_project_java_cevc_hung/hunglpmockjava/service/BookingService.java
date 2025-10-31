@@ -15,6 +15,8 @@ import com.mock_project_java_cevc_hung.hunglpmockjava.repository.UserRepository;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -35,6 +37,13 @@ public class BookingService {
     
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private MessageSource messageSource;
+    
+    private String getMessage(String code, Object... args) {
+        return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
+    }
 
     public Page<BookingResponse> getAllBookings(String search, Pageable pageable) {
         Specification<BookingEntity> spec = createSearchSpecification(search);
@@ -49,11 +58,18 @@ public class BookingService {
 
     public BookingResponse updateBooking(Long id, BookingUpdateRequest request) {
         BookingEntity booking = findBookingById(id);
+        Integer oldQty = booking.getQty();
+        Integer newQty = request.getQty();
+        int qtyDiff = newQty - oldQty;
         
-        booking.setQty(request.getQty());
+        if (qtyDiff != 0) {
+            updateTourSeats(booking.getTour(), qtyDiff);
+        }
+        
+        booking.setQty(newQty);
         booking.setAmount(request.getAmount());
-        
         BookingEntity savedBooking = bookingRepository.save(booking);
+        
         return convertToResponse(savedBooking);
     }
 
@@ -89,18 +105,12 @@ public class BookingService {
     
     public ApiBookingResponse createBooking(BookingCreateRequest request, Long userId) {
         TourEntity tour = tourRepository.findById(request.getTourId())
-                .orElseThrow(() -> new ResourceNotFoundException("Tour not found with id: " + request.getTourId()));
+                .orElseThrow(() -> new ResourceNotFoundException(getMessage("booking.api.error.tour.not_found", request.getTourId())));
         
-        if (tour.getStatus() != TourEntity.Status.ACTIVE) {
-            throw new BusinessException("Tour is not active");
-        }
-        
-        if (tour.getSeatsAvailable() < request.getQty()) {
-            throw new BusinessException("Not enough seats available. Available: " + tour.getSeatsAvailable() + ", Requested: " + request.getQty());
-        }
+        validateTourBooking(tour, request.getQty());
         
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException(getMessage("booking.api.error.user.not_found", userId)));
         
         Double amount = tour.getPrice().multiply(new java.math.BigDecimal(request.getQty())).doubleValue();
         
@@ -113,8 +123,7 @@ public class BookingService {
                 .build();
         
         BookingEntity savedBooking = bookingRepository.save(booking);
-        tour.setSeatsAvailable(tour.getSeatsAvailable() - request.getQty());
-        tourRepository.save(tour);
+        updateTourSeats(tour, request.getQty());
         
         return convertToApiResponse(savedBooking);
     }
@@ -128,24 +137,22 @@ public class BookingService {
         BookingEntity booking = findBookingById(bookingId);
         
         if (!booking.getUser().getId().equals(userId)) {
-            throw new BusinessException("You can only cancel your own bookings");
+            throw new BusinessException(getMessage("booking.api.error.user.own_booking_required"));
         }
         
         if (booking.getStatus() == BookingEntity.Status.CANCELLED) {
-            throw new BusinessException("Booking is already cancelled");
+            throw new BusinessException(getMessage("booking.api.error.booking.already_cancelled"));
         }
         
         if (booking.getStatus() == BookingEntity.Status.REFUNDED) {
-            throw new BusinessException("Booking has been refunded");
+            throw new BusinessException(getMessage("booking.api.error.booking.already_refunded"));
         }
         
         booking.setStatus(BookingEntity.Status.CANCELLED);
         booking.setCancelledAt(java.time.LocalDateTime.now());
         BookingEntity savedBooking = bookingRepository.save(booking);
         
-        TourEntity tour = booking.getTour();
-        tour.setSeatsAvailable(tour.getSeatsAvailable() + booking.getQty());
-        tourRepository.save(tour);
+        updateTourSeats(booking.getTour(), -booking.getQty());
         
         return convertToApiResponse(savedBooking);
     }
@@ -206,6 +213,27 @@ public class BookingService {
 
     private BookingEntity findBookingById(Long id) {
         return bookingRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(getMessage("booking.api.error.booking.not_found", id)));
+    }
+    
+    private void updateTourSeats(TourEntity tour, int qtyDiff) {
+        int newAvailableSeats = tour.getSeatsAvailable() - qtyDiff;
+        
+        if (newAvailableSeats < 0) {
+            throw new BusinessException(getMessage("booking.api.error.booking.cannot_adjust_seats", tour.getSeatsAvailable(), qtyDiff));
+        }
+        
+        tour.setSeatsAvailable(newAvailableSeats);
+        tourRepository.save(tour);
+    }
+    
+    private void validateTourBooking(TourEntity tour, Integer requestedQty) {
+        if (tour.getStatus() != TourEntity.Status.ACTIVE) {
+            throw new BusinessException(getMessage("booking.api.error.tour.not_active"));
+        }
+        
+        if (tour.getSeatsAvailable() < requestedQty) {
+            throw new BusinessException(getMessage("booking.api.error.tour.not_enough_seats", tour.getSeatsAvailable(), requestedQty));
+        }
     }
 }

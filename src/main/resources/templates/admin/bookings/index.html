@@ -10,7 +10,7 @@
         <!-- Main Content -->
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">Bookings Management</h1>
+                <h1 class="h2" th:text="#{booking.management.title}">Bookings Management</h1>
             </div>
 
             <!-- Flash Messages -->
@@ -22,12 +22,12 @@
                     <form method="get" action="/admin/bookings">
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label for="search" class="form-label">Search</label>
+                                <label for="search" class="form-label" th:text="#{booking.form.search.label}">Search</label>
                                 <input type="text" class="form-control" id="search" name="search"
-                                       th:value="${search}" placeholder="Search by tour, user, or payment reference">
+                                       th:value="${search}" th:placeholder="#{booking.form.search.placeholder}">
                             </div>
                             <div class="col-md-3">
-                                <label for="sortBy" class="form-label">Sort By</label>
+                                <label for="sortBy" class="form-label" th:text="#{booking.form.sort.by}">Sort By</label>
                                 <select class="form-select" id="sortBy" name="sortBy">
                                     <option value="id" th:selected="${sortBy == 'id'}">ID</option>
                                     <option value="createdAt" th:selected="${sortBy == 'createdAt'}">Created Date</option>
@@ -35,14 +35,14 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label for="sortDir" class="form-label">Order</label>
+                                <label for="sortDir" class="form-label" th:text="#{booking.form.sort.order}">Order</label>
                                 <select class="form-select" id="sortDir" name="sortDir">
                                     <option value="asc" th:selected="${sortDir == 'asc'}">Ascending</option>
                                     <option value="desc" th:selected="${sortDir == 'desc'}">Descending</option>
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <label for="size" class="form-label">Items per page</label>
+                                <label for="size" class="form-label" th:text="#{booking.form.sort.itemsPerPage}">Items per page</label>
                                 <select class="form-select" id="size" name="size">
                                     <option value="5" th:selected="${size == 5}">5</option>
                                     <option value="10" th:selected="${size == 10}">10</option>
@@ -53,10 +53,10 @@
                         <div class="row mt-3">
                             <div class="col-12">
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-search"></i> Filter
+                                    <i class="fas fa-search"></i> <span th:text="#{booking.actions.filter}">Filter</span>
                                 </button>
                                 <a href="/admin/bookings" class="btn btn-secondary">
-                                    <i class="fas fa-times"></i> Clear
+                                    <i class="fas fa-times"></i> <span th:text="#{booking.actions.clear}">Clear</span>
                                 </a>
                             </div>
                         </div>
@@ -68,30 +68,30 @@
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
-                        Bookings List
+                        <span th:text="#{booking.management.list.title}">Bookings List</span>
                         <span class="badge bg-secondary" th:text="${totalItems}">0</span>
                     </h5>
                 </div>
                 <div class="card-body">
                     <div th:if="${bookings.empty}" class="text-center py-5">
                         <i class="fas fa-calendar-check fa-3x text-muted mb-3"></i>
-                        <h4 class="text-muted">No bookings found</h4>
-                        <p class="text-muted">Bookings will appear here once users make reservations.</p>
+                        <h4 class="text-muted" th:text="#{booking.management.list.empty.title}">No bookings found</h4>
+                        <p class="text-muted" th:text="#{booking.management.list.empty.message}">Bookings will appear here once users make reservations.</p>
                     </div>
 
                     <div th:unless="${bookings.empty}" class="table-responsive">
                         <table class="table table-hover">
                             <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Tour</th>
-                                <th>User</th>
-                                <th>Quantity</th>
-                                <th>Amount</th>
-                                <th>Status</th>
-                                <th>Payment Ref</th>
-                                <th>Created</th>
-                                <th>Actions</th>
+                                <th th:text="#{booking.table.id}">ID</th>
+                                <th th:text="#{booking.table.tour}">Tour</th>
+                                <th th:text="#{booking.table.user}">User</th>
+                                <th th:text="#{booking.table.quantity}">Quantity</th>
+                                <th th:text="#{booking.table.amount}">Amount</th>
+                                <th th:text="#{booking.table.status}">Status</th>
+                                <th th:text="#{booking.table.paymentRef}">Payment Ref</th>
+                                <th th:text="#{booking.table.created}">Created</th>
+                                <th th:text="#{booking.table.actions}">Actions</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -112,10 +112,10 @@
                                     <span class="fw-bold text-success" th:text="${#numbers.formatDecimal(booking.amount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</span>
                                 </td>
                                 <td>
-                                    <span th:if="${booking.status.name() == 'PENDING'}" class="badge bg-warning">Pending</span>
-                                    <span th:if="${booking.status.name() == 'PAID'}" class="badge bg-success">Paid</span>
-                                    <span th:if="${booking.status.name() == 'CANCELLED'}" class="badge bg-danger">Cancelled</span>
-                                    <span th:if="${booking.status.name() == 'REFUNDED'}" class="badge bg-secondary">Refunded</span>
+                                    <span th:if="${booking.status.name() == 'PENDING'}" class="badge bg-warning" th:text="#{booking.status.pending}">Pending</span>
+                                    <span th:if="${booking.status.name() == 'PAID'}" class="badge bg-success" th:text="#{booking.status.paid}">Paid</span>
+                                    <span th:if="${booking.status.name() == 'CANCELLED'}" class="badge bg-danger" th:text="#{booking.status.cancelled}">Cancelled</span>
+                                    <span th:if="${booking.status.name() == 'REFUNDED'}" class="badge bg-secondary" th:text="#{booking.status.refunded}">Refunded</span>
                                 </td>
                                 <td>
                                     <code th:text="${booking.paymentRef ?: 'N/A'}">REF123</code>
@@ -126,16 +126,16 @@
                                 <td>
                                     <div class="btn-group" role="group">
                                         <a th:href="@{/admin/bookings/{id}/edit(id=${booking.id})}"
-                                           class="btn btn-sm btn-outline-primary" title="Edit">
+                                           class="btn btn-sm btn-outline-primary" th:title="#{booking.actions.edit}">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <!-- Reactivate button for CANCELLED bookings -->
                                         <form th:action="@{/admin/bookings/{id}/status(id=${booking.id})}"
                                               method="post" class="d-inline"
                                               th:if="${booking.status.name() == 'CANCELLED'}"
-                                              onsubmit="return confirm('Are you sure you want to reactivate this booking?')">
+                                              th:onsubmit="'return confirm(\'' + #{booking.confirm.reactivate} + '\')'">
                                             <input type="hidden" name="status" value="PENDING">
-                                            <button type="submit" class="btn btn-sm btn-outline-success" title="Reactivate">
+                                            <button type="submit" class="btn btn-sm btn-outline-success" th:title="#{booking.actions.reactivate}">
                                                 <i class="fas fa-undo"></i>
                                             </button>
                                         </form>
@@ -143,15 +143,15 @@
                                         <form th:action="@{/admin/bookings/{id}/cancel(id=${booking.id})}"
                                               method="post" class="d-inline"
                                               th:if="${booking.status.name() != 'CANCELLED' and booking.status.name() != 'REFUNDED'}"
-                                              onsubmit="return confirm('Are you sure you want to cancel this booking?')">
-                                            <button type="submit" class="btn btn-sm btn-outline-warning" title="Cancel">
+                                              th:onsubmit="'return confirm(\'' + #{booking.confirm.cancel} + '\')'">
+                                            <button type="submit" class="btn btn-sm btn-outline-warning" th:title="#{booking.actions.cancel}">
                                                 <i class="fas fa-ban"></i>
                                             </button>
                                         </form>
                                         <form th:action="@{/admin/bookings/{id}/delete(id=${booking.id})}"
                                               method="post" class="d-inline"
-                                              onsubmit="return confirm('Are you sure you want to delete this booking?')">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                              th:onsubmit="'return confirm(\'' + #{booking.confirm.delete} + '\')'">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" th:title="#{booking.actions.delete}">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
@@ -166,15 +166,15 @@
                     <div th:unless="${bookings.empty}" class="d-flex justify-content-between align-items-center mt-4">
                         <div>
                                 <span class="text-muted">
-                                    Showing <span th:text="${bookings.number * bookings.size + 1}">1</span> to
-                                    <span th:text="${bookings.number * bookings.size + bookings.numberOfElements}">10</span> of
-                                    <span th:text="${bookings.totalElements}">100</span> entries
+                                    <span th:text="#{booking.pagination.showing}">Showing</span> <span th:text="${bookings.number * bookings.size + 1}">1</span> <span th:text="#{booking.pagination.to}">to</span>
+                                    <span th:text="${bookings.number * bookings.size + bookings.numberOfElements}">10</span> <span th:text="#{booking.pagination.of}">of</span>
+                                    <span th:text="${bookings.totalElements}">100</span> <span th:text="#{booking.pagination.entries}">entries</span>
                                 </span>
                         </div>
                         <nav>
                             <ul class="pagination pagination-sm mb-0">
                                 <li class="page-item" th:classappend="${!bookings.hasPrevious()} ? 'disabled'">
-                                    <a class="page-link" th:href="@{/admin/bookings(page=${bookings.number - 1}, size=${bookings.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}">Previous</a>
+                                    <a class="page-link" th:href="@{/admin/bookings(page=${bookings.number - 1}, size=${bookings.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}" th:text="#{booking.pagination.previous}">Previous</a>
                                 </li>
                                 <li th:each="pageNum : ${#numbers.sequence(0, bookings.totalPages - 1)}"
                                     class="page-item"
@@ -184,7 +184,7 @@
                                        th:text="${pageNum + 1}">1</a>
                                 </li>
                                 <li class="page-item" th:classappend="${!bookings.hasNext()} ? 'disabled'">
-                                    <a class="page-link" th:href="@{/admin/bookings(page=${bookings.number + 1}, size=${bookings.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}">Next</a>
+                                    <a class="page-link" th:href="@{/admin/bookings(page=${bookings.number + 1}, size=${bookings.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}" th:text="#{booking.pagination.next}">Next</a>
                                 </li>
                             </ul>
                         </nav>
