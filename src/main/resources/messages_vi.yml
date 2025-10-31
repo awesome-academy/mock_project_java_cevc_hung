@@ -1,0 +1,89 @@
+booking:
+  # Management
+  management:
+    title: "Quản lý Booking"
+    list:
+      title: "Danh sách Booking"
+      empty:
+        title: "Không tìm thấy booking nào"
+        message: "Booking sẽ xuất hiện ở đây khi người dùng đặt chỗ."
+  # Form labels
+  form:
+    search:
+      label: "Tìm kiếm"
+      placeholder: "Tìm theo tour, user hoặc mã thanh toán"
+    sort:
+      by: "Sắp xếp theo"
+      order: "Thứ tự"
+      itemsPerPage: "Số lượng mỗi trang"
+  # Table headers
+  table:
+    id: "ID"
+    tour: "Tour"
+    user: "Người dùng"
+    quantity: "Số lượng"
+    amount: "Số tiền"
+    status: "Trạng thái"
+    paymentRef: "Mã thanh toán"
+    created: "Ngày tạo"
+    actions: "Thao tác"
+  # Status labels
+  status:
+    pending: "Chờ xử lý"
+    paid: "Đã thanh toán"
+    cancelled: "Đã hủy"
+    refunded: "Đã hoàn tiền"
+  # Actions
+  actions:
+    edit: "Chỉnh sửa"
+    cancel: "Hủy"
+    reactivate: "Kích hoạt lại"
+    delete: "Xóa"
+    filter: "Lọc"
+    clear: "Xóa bộ lọc"
+  # Confirmations
+  confirm:
+    reactivate: "Bạn có chắc muốn kích hoạt lại booking này?"
+    cancel: "Bạn có chắc muốn hủy booking này?"
+    delete: "Bạn có chắc muốn xóa booking này?"
+  # Messages
+  load:
+    error: "Lỗi khi tải booking: {0}"
+  update:
+    success: "Cập nhật booking thành công!"
+    error: "Lỗi khi cập nhật booking: {0}"
+  delete:
+    success: "Xóa booking thành công!"
+    error: "Lỗi khi xóa booking: {0}"
+  cancel:
+    success: "Hủy booking thành công!"
+    error: "Lỗi khi hủy booking: {0}"
+  status:
+    update:
+      success: "Cập nhật trạng thái booking thành công!"
+      error: "Lỗi khi cập nhật trạng thái booking: {0}"
+    invalid: "Giá trị trạng thái không hợp lệ: {0}"
+  # Pagination
+  pagination:
+    showing: "Hiển thị"
+    to: "đến"
+    of: "trong tổng số"
+    entries: "kết quả"
+    previous: "Trước"
+    next: "Sau"
+  # API Error Messages
+  api:
+    error:
+      tour:
+        not_found: "Không tìm thấy tour với id: {0}"
+        not_active: "Tour hiện không hoạt động"
+        not_enough_seats: "Không đủ chỗ trống. Có sẵn: {0}, Yêu cầu: {1}"
+      user:
+        not_found: "Không tìm thấy người dùng với id: {0}"
+        own_booking_required: "Chỉ có thể hủy booking của chính bạn"
+      booking:
+        not_found: "Không tìm thấy booking với id: {0}"
+        already_cancelled: "Booking đã được hủy trước đó"
+        already_refunded: "Booking đã được hoàn tiền"
+        cannot_adjust_seats: "Không thể điều chỉnh số ghế. Không đủ ghế trống. Có sẵn: {0}, Yêu cầu thay đổi: {1}"
+

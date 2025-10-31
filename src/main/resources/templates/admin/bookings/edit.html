@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layouts/fragments :: head(title='Edit Booking')}"></head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav th:replace="~{layouts/fragments :: sidebar(${activePage})}"></nav>
+            
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Edit Booking</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a href="/admin/bookings" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Bookings
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Flash Messages -->
+                <div th:replace="~{layouts/fragments :: flash-messages}"></div>
+
+                <!-- Edit Booking Form -->
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Booking Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <form th:action="@{/admin/bookings/{id}/edit(id=${booking.id})}" 
+                                      th:object="${bookingUpdateRequest}" 
+                                      method="post">
+                                    
+                                    <!-- Quantity -->
+                                    <div class="mb-3">
+                                        <label for="qty" class="form-label">Quantity <span class="text-danger">*</span></label>
+                                        <input type="number" 
+                                               class="form-control" 
+                                               id="qty" 
+                                               th:field="*{qty}"
+                                               min="1"
+                                               placeholder="Enter quantity" 
+                                               required>
+                                        <div th:if="${#fields.hasErrors('qty')}" class="text-danger">
+                                            <small th:errors="*{qty}"></small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Amount -->
+                                    <div class="mb-3">
+                                        <label for="amount" class="form-label">Amount (VND) <span class="text-danger">*</span></label>
+                                        <input type="number" 
+                                               class="form-control" 
+                                               id="amount" 
+                                               th:field="*{amount}"
+                                               min="0"
+                                               step="1000"
+                                               placeholder="Enter amount" 
+                                               required>
+                                        <div th:if="${#fields.hasErrors('amount')}" class="text-danger">
+                                            <small th:errors="*{amount}"></small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Submit Buttons -->
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save"></i> Update Booking
+                                        </button>
+                                        <a href="/admin/bookings" class="btn btn-secondary">
+                                            <i class="fas fa-times"></i> Cancel
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Booking Info Card -->
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="card-title mb-0">
+                                    <i class="fas fa-info-circle"></i> Booking Details
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <strong>ID:</strong>
+                                    <span th:text="${booking.id}">1</span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Tour:</strong>
+                                    <div class="fw-bold" th:text="${booking.tourTitle}">Tour Title</div>
+                                    <small class="text-muted" th:text="${booking.tourLocation}">Location</small>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>User:</strong>
+                                    <div th:text="${booking.userName}">User Name</div>
+                                    <small class="text-muted" th:text="${booking.userEmail}">Email</small>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Current Quantity:</strong>
+                                    <div th:text="${booking.qty}">1</div>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Current Amount:</strong>
+                                    <div class="fw-bold text-success" th:text="${#numbers.formatDecimal(booking.amount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</div>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Status:</strong>
+                                    <div>
+                                        <span th:if="${booking.status.name() == 'PENDING'}" class="badge bg-warning">Pending</span>
+                                        <span th:if="${booking.status.name() == 'PAID'}" class="badge bg-success">Paid</span>
+                                        <span th:if="${booking.status.name() == 'CANCELLED'}" class="badge bg-danger">Cancelled</span>
+                                        <span th:if="${booking.status.name() == 'REFUNDED'}" class="badge bg-secondary">Refunded</span>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Payment Reference:</strong>
+                                    <code th:text="${booking.paymentRef ?: 'N/A'}">REF123</code>
+                                </div>
+                                <div class="mb-3" th:if="${booking.paidAt != null}">
+                                    <strong>Paid At:</strong>
+                                    <div th:text="${#temporals.format(booking.paidAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</div>
+                                </div>
+                                <div class="mb-3" th:if="${booking.cancelledAt != null}">
+                                    <strong>Cancelled At:</strong>
+                                    <div th:text="${#temporals.format(booking.cancelledAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</div>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Created:</strong>
+                                    <div th:text="${#temporals.format(booking.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</div>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Updated:</strong>
+                                    <div th:text="${#temporals.format(booking.updatedAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Quick Actions</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <!-- Reactivate button for CANCELLED bookings -->
+                                    <form th:action="@{/admin/bookings/{id}/status(id=${booking.id})}" 
+                                          method="post" class="d-inline"
+                                          th:if="${booking.status.name() == 'CANCELLED'}"
+                                          onsubmit="return confirm('Are you sure you want to reactivate this booking?')">
+                                        <input type="hidden" name="status" value="PENDING">
+                                        <button type="submit" class="btn btn-success w-100">
+                                            <i class="fas fa-undo"></i> Reactivate Booking
+                                        </button>
+                                    </form>
+                                    <!-- Cancel button for non-cancelled bookings -->
+                                    <form th:action="@{/admin/bookings/{id}/cancel(id=${booking.id})}" 
+                                          method="post" class="d-inline"
+                                          th:if="${booking.status.name() != 'CANCELLED' and booking.status.name() != 'REFUNDED'}"
+                                          onsubmit="return confirm('Are you sure you want to cancel this booking?')">
+                                        <button type="submit" class="btn btn-warning w-100">
+                                            <i class="fas fa-ban"></i> Cancel Booking
+                                        </button>
+                                    </form>
+                                    <form th:action="@{/admin/bookings/{id}/delete(id=${booking.id})}" 
+                                          method="post" class="d-inline"
+                                          onsubmit="return confirm('Are you sure you want to delete this booking?')">
+                                        <button type="submit" class="btn btn-danger w-100">
+                                            <i class="fas fa-trash"></i> Delete Booking
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="~{layouts/fragments :: scripts}"></div>
+</body>
+</html>
+
