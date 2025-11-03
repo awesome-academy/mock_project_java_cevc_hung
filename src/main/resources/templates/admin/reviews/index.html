@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layouts/fragments :: head(title='Reviews Management')}"></head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav th:replace="~{layouts/fragments :: sidebar(${activePage})}"></nav>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2" th:text="#{review.management.title}">Reviews Management</h1>
+            </div>
+
+            <!-- Flash Messages -->
+            <div th:replace="~{layouts/fragments :: flash-messages}"></div>
+
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" action="/admin/reviews">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="search" class="form-label" th:text="#{review.form.search.label}">Search</label>
+                                <input type="text" class="form-control" id="search" name="search"
+                                       th:value="${search}" th:placeholder="#{review.form.search.placeholder}">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="sortBy" class="form-label" th:text="#{review.form.sort.by}">Sort By</label>
+                                <select class="form-select" id="sortBy" name="sortBy">
+                                    <option value="id" th:selected="${sortBy == 'id'}">ID</option>
+                                    <option value="createdAt" th:selected="${sortBy == 'createdAt'}">Created Date</option>
+                                    <option value="rating" th:selected="${sortBy == 'rating'}">Rating</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="sortDir" class="form-label" th:text="#{review.form.sort.order}">Order</label>
+                                <select class="form-select" id="sortDir" name="sortDir">
+                                    <option value="asc" th:selected="${sortDir == 'asc'}">Ascending</option>
+                                    <option value="desc" th:selected="${sortDir == 'desc'}">Descending</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="size" class="form-label" th:text="#{review.form.sort.itemsPerPage}">Items per page</label>
+                                <select class="form-select" id="size" name="size">
+                                    <option value="5" th:selected="${size == 5}">5</option>
+                                    <option value="10" th:selected="${size == 10}">10</option>
+                                    <option value="20" th:selected="${size == 20}">20</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> <span th:text="#{review.actions.filter}">Filter</span>
+                                </button>
+                                <a href="/admin/reviews" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> <span th:text="#{review.actions.clear}">Clear</span>
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Reviews Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <span th:text="#{review.management.list.title}">Reviews List</span>
+                        <span class="badge bg-secondary" th:text="${totalItems}">0</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div th:if="${reviews.empty}" class="text-center py-5">
+                        <i class="fas fa-star fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted" th:text="#{review.management.list.empty.title}">No reviews found</h4>
+                        <p class="text-muted" th:text="#{review.management.list.empty.message}">Reviews will appear here once users submit feedback.</p>
+                    </div>
+
+                    <div th:unless="${reviews.empty}" class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th th:text="#{review.table.id}">ID</th>
+                                <th th:text="#{review.table.tour}">Tour</th>
+                                <th th:text="#{review.table.user}">User</th>
+                                <th th:text="#{review.table.rating}">Rating</th>
+                                <th th:text="#{review.table.content}">Content</th>
+                                <th th:text="#{review.table.type}">Type</th>
+                                <th th:text="#{review.table.status}">Status</th>
+                                <th th:text="#{review.table.likes}">Likes</th>
+                                <th th:text="#{review.table.created}">Created</th>
+                                <th th:text="#{review.table.actions}">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="review : ${reviews}">
+                                <td th:text="${review.id}">1</td>
+                                <td>
+                                    <div class="fw-bold" th:text="${review.tourTitle}">Tour Title</div>
+                                    <small class="text-muted" th:text="${review.tourId}">ID: 1</small>
+                                </td>
+                                <td>
+                                    <div th:text="${review.userName}">User Name</div>
+                                    <small class="text-muted" th:text="${review.userEmail}">email@example.com</small>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-warning text-dark me-2" th:text="${review.rating} + '⭐'">5⭐</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" th:text="${review.content}">Review content...</div>
+                                </td>
+                                <td>
+                                    <span th:if="${review.type.name() == 'PLACE'}" class="badge bg-info" th:text="#{review.type.place}">Place</span>
+                                    <span th:if="${review.type.name() == 'FOOD'}" class="badge bg-info" th:text="#{review.type.food}">Food</span>
+                                    <span th:if="${review.type.name() == 'NEWS'}" class="badge bg-info" th:text="#{review.type.news}">News</span>
+                                </td>
+                                <td>
+                                    <span th:if="${review.status.name() == 'PENDING'}" class="badge bg-warning" th:text="#{review.status.pending}">Pending</span>
+                                    <span th:if="${review.status.name() == 'APPROVED'}" class="badge bg-success" th:text="#{review.status.approved}">Approved</span>
+                                    <span th:if="${review.status.name() == 'REJECTED'}" class="badge bg-danger" th:text="#{review.status.rejected}">Rejected</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary" th:text="${review.totalLikes}">0</span>
+                                </td>
+                                <td>
+                                    <small th:text="${#temporals.format(review.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 12:00</small>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <!-- Approve button for PENDING reviews -->
+                                        <form th:action="@{/admin/reviews/{id}/approve(id=${review.id})}"
+                                              method="post" class="d-inline"
+                                              th:if="${review.status.name() == 'PENDING'}"
+                                              th:attr="onsubmit='return confirm(\'' + #{review.confirm.approve} + '\')'">
+                                            <button type="submit" class="btn btn-sm btn-outline-success" th:title="#{review.actions.approve}">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                        <!-- Reject button for PENDING reviews -->
+                                        <form th:action="@{/admin/reviews/{id}/reject(id=${review.id})}"
+                                              method="post" class="d-inline"
+                                              th:if="${review.status.name() == 'PENDING'}"
+                                              th:attr="onsubmit='return confirm(\'' + #{review.confirm.reject} + '\')'">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" th:title="#{review.actions.reject}">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                        <form th:action="@{/admin/reviews/{id}/delete(id=${review.id})}"
+                                              method="post" class="d-inline"
+                                              th:attr="onsubmit='return confirm(\'' + #{review.confirm.delete} + '\')'">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" th:title="#{review.actions.delete}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div th:unless="${reviews.empty}" class="d-flex justify-content-between align-items-center mt-4">
+                        <div>
+                                <span class="text-muted">
+                                    <span th:text="#{review.pagination.showing}">Showing</span> <span th:text="${reviews.number * reviews.size + 1}">1</span> <span th:text="#{review.pagination.to}">to</span>
+                                    <span th:text="${reviews.number * reviews.size + reviews.numberOfElements}">10</span> <span th:text="#{review.pagination.of}">of</span>
+                                    <span th:text="${reviews.totalElements}">100</span> <span th:text="#{review.pagination.entries}">entries</span>
+                                </span>
+                        </div>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0">
+                                <li class="page-item" th:classappend="${!reviews.hasPrevious()} ? 'disabled'">
+                                    <a class="page-link" th:href="@{/admin/reviews(page=${reviews.number - 1}, size=${reviews.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}" th:text="#{review.pagination.previous}">Previous</a>
+                                </li>
+                                <li th:each="pageNum : ${#numbers.sequence(0, reviews.totalPages - 1)}"
+                                    class="page-item"
+                                    th:classappend="${pageNum == reviews.number} ? 'active'">
+                                    <a class="page-link"
+                                       th:href="@{/admin/reviews(page=${pageNum}, size=${reviews.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}"
+                                       th:text="${pageNum + 1}">1</a>
+                                </li>
+                                <li class="page-item" th:classappend="${!reviews.hasNext()} ? 'disabled'">
+                                    <a class="page-link" th:href="@{/admin/reviews(page=${reviews.number + 1}, size=${reviews.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}" th:text="#{review.pagination.next}">Next</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{layouts/fragments :: scripts}"></div>
+</body>
+</html>

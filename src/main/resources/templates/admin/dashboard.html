@@ -59,7 +59,7 @@
                                     <div class="col mr-2">
                                         <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
                                             Total Bookings</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">0</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${totalBooking}">0</div>
                                     </div>
                                     <div class="col-auto">
                                         <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
@@ -95,7 +95,20 @@
                                 <h6 class="m-0 font-weight-bold text-primary">Recent Users</h6>
                             </div>
                             <div class="card-body">
-                                <p class="text-muted">No recent users to display.</p>
+                                <table class="table table-striped">
+                                    <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="user : ${recentUsers}">
+                                        <td th:text="${user.name}">Name</td>
+                                        <td th:text="${user.email}">Email</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -105,7 +118,24 @@
                                 <h6 class="m-0 font-weight-bold text-primary">Recent Bookings</h6>
                             </div>
                             <div class="card-body">
-                                <p class="text-muted">No recent bookings to display.</p>
+                                <table class="table table-striped">
+                                    <thead>
+                                    <tr>
+                                        <th>Tour Name</th>
+                                        <th>User Name</th>
+                                        <th>Quantity</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="booking : ${recentBookings}">
+                                        <td th:text="${booking.tour.title}">Tour Name</td>
+                                        <td th:text="${booking.user.name}">User Name</td>
+                                        <td th:text="${booking.qty}">0</td>
+                                        <td th:text="${#numbers.formatDecimal(booking.amount, 0, 'COMMA', 2, 'POINT')}">$0.00</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>

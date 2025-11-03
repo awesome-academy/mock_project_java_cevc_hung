@@ -87,3 +87,85 @@ booking:
         already_refunded: "Booking đã được hoàn tiền"
         cannot_adjust_seats: "Không thể điều chỉnh số ghế. Không đủ ghế trống. Có sẵn: {0}, Yêu cầu thay đổi: {1}"
 
+review:
+  # Management
+  management:
+    title: "Quản lý Đánh giá"
+    list:
+      title: "Danh sách Đánh giá"
+      empty:
+        title: "Không tìm thấy đánh giá nào"
+        message: "Đánh giá sẽ xuất hiện ở đây khi người dùng gửi phản hồi."
+  # Form labels
+  form:
+    search:
+      label: "Tìm kiếm"
+      placeholder: "Tìm theo nội dung, tour hoặc người dùng"
+    sort:
+      by: "Sắp xếp theo"
+      order: "Thứ tự"
+      itemsPerPage: "Số lượng mỗi trang"
+  # Table headers
+  table:
+    id: "ID"
+    tour: "Tour"
+    user: "Người dùng"
+    rating: "Đánh giá"
+    content: "Nội dung"
+    type: "Loại"
+    status: "Trạng thái"
+    likes: "Lượt thích"
+    created: "Ngày tạo"
+    actions: "Thao tác"
+  # Status labels
+  status:
+    pending: "Chờ duyệt"
+    approved: "Đã duyệt"
+    rejected: "Đã từ chối"
+  # Type labels
+  type:
+    place: "Địa điểm"
+    food: "Món ăn"
+    news: "Tin tức"
+  # Actions
+  actions:
+    approve: "Duyệt"
+    reject: "Từ chối"
+    delete: "Xóa"
+    filter: "Lọc"
+    clear: "Xóa bộ lọc"
+  # Confirmations
+  confirm:
+    approve: "Bạn có chắc muốn duyệt đánh giá này?"
+    reject: "Bạn có chắc muốn từ chối đánh giá này?"
+    delete: "Bạn có chắc muốn xóa đánh giá này?"
+  # Messages
+  approve:
+    success: "Duyệt đánh giá thành công!"
+    error: "Lỗi khi duyệt đánh giá: {0}"
+  reject:
+    success: "Từ chối đánh giá thành công!"
+    error: "Lỗi khi từ chối đánh giá: {0}"
+  delete:
+    success: "Xóa đánh giá thành công!"
+    error: "Lỗi khi xóa đánh giá: {0}"
+  # Pagination
+  pagination:
+    showing: "Hiển thị"
+    to: "đến"
+    of: "trong tổng số"
+    entries: "kết quả"
+    previous: "Trước"
+    next: "Sau"
+  # API Error Messages
+  api:
+    error:
+      tour:
+        not_found: "Không tìm thấy tour với id: {0}"
+      user:
+        not_found: "Không tìm thấy người dùng với id: {0}"
+        own_review_required: "Chỉ có thể chỉnh sửa đánh giá của chính bạn"
+      review:
+        not_found: "Không tìm thấy đánh giá với id: {0}"
+      already_reviewed: "Bạn đã đánh giá tour này rồi"
+
