@@ -100,7 +100,7 @@
                                         <!-- Seats Available -->
                                         <div class="col-md-6">
                                             <label for="seatsAvailable" class="form-label">Available Seats</label>
-                                            <input type="number" class="form-control" id="seatsAvailable" th:field="*{seatsAvailable}" 
+                                            <input type="number" class="form-control" id="seatsAvailable" disabled="disabled" th:field="*{seatsAvailable}"
                                                    min="0" placeholder="Enter available seats">
                                             <div th:if="${#fields.hasErrors('seatsAvailable')}" class="text-danger">
                                                 <span th:errors="*{seatsAvailable}"></span>
