@@ -16,7 +16,7 @@ public class UserResponse {
     
     private Long id;
     private String name;
-    private String phone_number;
+    private String phoneNumber;
     private String email;
     private String address;
     private Boolean isActive;

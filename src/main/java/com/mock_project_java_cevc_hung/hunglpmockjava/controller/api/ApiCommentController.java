@@ -18,6 +18,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1")
 @CrossOrigin(origins = "*")
@@ -85,6 +87,13 @@ public class ApiCommentController {
         
         Long userId = userDetails.getId();
         boolean isAdmin = userDetails.isAdmin();
+        
+        ApiCommentResponse existingComment = commentService.getCommentById(id);
+        if (!isAdmin && !existingComment.getUserId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Forbidden", "message", "You can only modify your own comments"));
+        }
+        
         ApiCommentResponse response = commentService.updateComment(id, userId, isAdmin, request);
         return ResponseEntity.ok(response);
     }
@@ -97,6 +106,13 @@ public class ApiCommentController {
         
         Long userId = userDetails.getId();
         boolean isAdmin = userDetails.isAdmin();
+        
+        ApiCommentResponse existingComment = commentService.getCommentById(id);
+        if (!isAdmin && !existingComment.getUserId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Forbidden", "message", "You can only delete your own comments"));
+        }
+        
         commentService.deleteComment(id, userId, isAdmin);
         return ResponseEntity.noContent().build();
     }

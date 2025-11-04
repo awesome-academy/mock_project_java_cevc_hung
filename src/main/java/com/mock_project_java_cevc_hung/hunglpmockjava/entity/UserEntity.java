@@ -20,7 +20,7 @@ public class UserEntity extends BaseEntity {
 
     @Pattern(regexp = "^0\\d{9,10}$", message = "Phone number must be 10 or 11 digits")
     @Column(length = 11, nullable = false)
-    private String phone_number;
+    private String phoneNumber;
 
     @Email(message = "Email invalid format")
     @Column(unique = true, nullable = false)

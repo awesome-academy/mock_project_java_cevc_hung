@@ -19,7 +19,7 @@ public class UserUpdateRequest {
     private String name;
     
     @Pattern(regexp = "^0\\d{9,10}$", message = "Phone number must be 10 or 11 digits")
-    private String phone_number;
+    private String phoneNumber;
     
     @Email(message = "Email invalid format")
     @NotBlank(message = "Email is required")

@@ -61,14 +61,14 @@
 
                                     <!-- Phone Number -->
                                     <div class="mb-3">
-                                        <label for="phone_number" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                                        <label for="phoneNumber" class="form-label">Phone Number <span class="text-danger">*</span></label>
                                         <input type="text" 
                                                class="form-control" 
-                                               id="phone_number" 
-                                               th:field="*{phone_number}"
+                                               id="phoneNumber"
+                                               th:field="*{phoneNumber}"
                                                placeholder="Enter phone number (0XXXXXXXXX)">
-                                        <div th:if="${#fields.hasErrors('phone_number')}" class="text-danger">
-                                            <small th:errors="*{phone_number}"></small>
+                                        <div th:if="${#fields.hasErrors('phoneNumber')}" class="text-danger">
+                                            <small th:errors="*{phoneNumber}"></small>
                                         </div>
                                     </div>
 

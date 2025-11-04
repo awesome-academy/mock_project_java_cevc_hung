@@ -9,6 +9,8 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -21,17 +23,25 @@ public class AdminUserController {
 
     private static final Logger logger = LoggerFactory.getLogger(AdminUserController.class);
 
-    // Constants
-    private static final String BASE_PATH = "/admin/users";
-    private static final String VIEW_BASE = "admin/users/";
-    private static final String VIEW_EDIT = VIEW_BASE + "edit";
-    private static final String REDIRECT_USERS = "redirect:" + BASE_PATH;
-
     private final UserService userService;
+    private final MessageSource messageSource;
 
     @Autowired
-    public AdminUserController(UserService userService) {
+    public AdminUserController(UserService userService, MessageSource messageSource) {
         this.userService = userService;
+        this.messageSource = messageSource;
+    }
+    
+    private void addErrorFlash(RedirectAttributes redirectAttributes, String message) {
+        redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, message);
+    }
+    
+    private void addSuccessFlash(RedirectAttributes redirectAttributes, String message) {
+        redirectAttributes.addFlashAttribute(AdminConstants.ATTR_SUCCESS, message);
+    }
+    
+    private String getMessage(String code, Object... args) {
+        return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
     }
 
     @GetMapping("/users/{id}/edit")
@@ -40,7 +50,7 @@ public class AdminUserController {
             UserResponse user = userService.getUserById(id);
             UserUpdateRequest request = UserUpdateRequest.builder()
                     .name(user.getName())
-                    .phone_number(user.getPhone_number())
+                    .phoneNumber(user.getPhoneNumber())
                     .email(user.getEmail())
                     .address(user.getAddress())
                     .isActive(user.getIsActive())
@@ -50,11 +60,11 @@ public class AdminUserController {
             model.addAttribute("userUpdateRequest", request);
             model.addAttribute("userId", id);
             model.addAttribute(AdminConstants.ATTR_ACTIVE_PAGE, "users");
-            return VIEW_EDIT;
+            return AdminConstants.VIEW_EDIT_USER;
         } catch (ResourceNotFoundException e) {
             logger.error("User not found with id: {}", id, e);
-            model.addAttribute(AdminConstants.ATTR_ERROR, "User not found");
-            return REDIRECT_USERS;
+            model.addAttribute(AdminConstants.ATTR_ERROR, getMessage(AdminConstants.MSG_USER_NOT_FOUND));
+            return AdminConstants.REDIRECT_USERS;
         }
     }
 
@@ -69,38 +79,38 @@ public class AdminUserController {
         if (result.hasErrors()) {
             model.addAttribute("userId", id);
             model.addAttribute(AdminConstants.ATTR_ACTIVE_PAGE, "users");
-            return VIEW_EDIT;
+            return AdminConstants.VIEW_EDIT_USER;
         }
         
         try {
             userService.updateUser(id, request);
-            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_SUCCESS, "User updated successfully!");
+            addSuccessFlash(redirectAttributes, getMessage(AdminConstants.MSG_USER_UPDATE_SUCCESS));
         } catch (EmailAlreadyExistsException e) {
             logger.warn("Email already exists: {}", request.getEmail());
-            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "Email already exists: " + request.getEmail());
+            addErrorFlash(redirectAttributes, getMessage(AdminConstants.MSG_EMAIL_ALREADY_EXISTS, request.getEmail()));
         } catch (ResourceNotFoundException e) {
             logger.error("User not found while updating id {}: {}", id, e.getMessage(), e);
-            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "User not found");
+            addErrorFlash(redirectAttributes, getMessage(AdminConstants.MSG_USER_NOT_FOUND));
         } catch (Exception e) {
             logger.error("Error updating user id {}: {}", id, e.getMessage(), e);
-            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "Error updating user: " + e.getMessage());
+            addErrorFlash(redirectAttributes, getMessage(AdminConstants.MSG_USER_UPDATE_ERROR, e.getMessage()));
         }
-        return REDIRECT_USERS;
+        return AdminConstants.REDIRECT_USERS;
     }
 
     @PostMapping("/users/{id}/delete")
     public String deleteUser(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             userService.deleteUser(id);
-            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_SUCCESS, "User deleted successfully!");
+            addSuccessFlash(redirectAttributes, getMessage(AdminConstants.MSG_USER_DELETE_SUCCESS));
         } catch (ResourceNotFoundException e) {
             logger.warn("User not found while deleting id {}: {}", id, e.getMessage());
-            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "User not found");
+            addErrorFlash(redirectAttributes, getMessage(AdminConstants.MSG_USER_NOT_FOUND));
         } catch (Exception e) {
             logger.error("Error deleting user id {}: {}", id, e.getMessage(), e);
-            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "Error deleting user: " + e.getMessage());
+            addErrorFlash(redirectAttributes, getMessage(AdminConstants.MSG_USER_DELETE_ERROR, e.getMessage()));
         }
-        return REDIRECT_USERS;
+        return AdminConstants.REDIRECT_USERS;
     }
 }
 

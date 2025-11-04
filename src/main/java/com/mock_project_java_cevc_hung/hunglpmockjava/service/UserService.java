@@ -41,7 +41,7 @@ public class UserService {
         }
         
         user.setName(request.getName());
-        user.setPhone_number(request.getPhone_number());
+        user.setPhoneNumber(request.getPhoneNumber());
         user.setEmail(request.getEmail());
         user.setAddress(request.getAddress());
         
@@ -66,7 +66,7 @@ public class UserService {
         return UserResponse.builder()
                 .id(user.getId())
                 .name(user.getName())
-                .phone_number(user.getPhone_number())
+                .phoneNumber(user.getPhoneNumber())
                 .email(user.getEmail())
                 .address(user.getAddress())
                 .isActive(user.getIsActive())
@@ -90,7 +90,7 @@ public class UserService {
         }
         
         user.setName(request.getName());
-        user.setPhone_number(request.getPhoneNumber());
+        user.setPhoneNumber(request.getPhoneNumber());
         user.setEmail(request.getEmail());
         user.setAddress(request.getAddress());
         
@@ -107,7 +107,7 @@ public class UserService {
         return ApiProfileResponse.builder()
                 .id(user.getId())
                 .name(user.getName())
-                .phoneNumber(user.getPhone_number())
+                .phoneNumber(user.getPhoneNumber())
                 .email(user.getEmail())
                 .address(user.getAddress())
                 .isActive(user.getIsActive())

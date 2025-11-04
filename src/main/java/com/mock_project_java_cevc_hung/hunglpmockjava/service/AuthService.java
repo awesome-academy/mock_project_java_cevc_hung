@@ -71,7 +71,7 @@ public class AuthService {
                 .email(registerRequest.getEmail())
                 .password(encoder.encode(registerRequest.getPassword()))
                 .address(registerRequest.getAddress())
-                .phone_number(registerRequest.getPhoneNumber())
+                .phoneNumber(registerRequest.getPhoneNumber())
                 .build();
 
         userRepository.save(user);
@@ -118,7 +118,7 @@ public class AuthService {
                     .name(name != null ? name : "Google User")
                     .email(email)
                     .password(encoder.encode("google_oauth2_user"))
-                    .phone_number(phone != null ? phone : "0000000000")
+                    .phoneNumber(phone != null ? phone : "0000000000")
                     .address(address != null ? address : "Google User Address")
                     .provider(UserEntity.Provider.GOOGLE)
                     .build();
