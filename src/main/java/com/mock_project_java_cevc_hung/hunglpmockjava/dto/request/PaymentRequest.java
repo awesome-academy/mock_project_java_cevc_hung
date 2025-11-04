@@ -1,6 +1,7 @@
 package com.mock_project_java_cevc_hung.hunglpmockjava.dto.request;
 
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,14 +12,13 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BookingCreateRequest {
+public class PaymentRequest {
     
-    @NotNull(message = "Tour ID is required")
-    private Long tourId;
+    @NotNull(message = "Booking ID is required")
+    private Long bookingId;
     
-    @NotNull(message = "Quantity is required")
-    @Min(value = 1, message = "Quantity must be at least 1")
-    private Integer qty;
+    @NotBlank(message = "Payment reference is required")
+    private String paymentRef;
     
     @NotNull(message = "Amount is required")
     @Min(value = 0, message = "Amount must be greater than or equal to 0")

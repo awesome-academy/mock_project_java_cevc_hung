@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layouts/fragments :: head(title='Revenue Management')}"></head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav th:replace="~{layouts/fragments :: sidebar(${activePage})}"></nav>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Revenue Management</h1>
+            </div>
+
+            <!-- Flash Messages -->
+            <div th:replace="~{layouts/fragments :: flash-messages}"></div>
+
+            <!-- Summary Card -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card border-left-primary shadow">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Total Revenue</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        <span th:text="${#numbers.formatDecimal(totalRevenue, 0, 'COMMA', 2, 'POINT')}">0.00</span> VND
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" action="/admin/revenue">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="search" class="form-label">Search</label>
+                                <input type="text" class="form-control" id="search" name="search"
+                                       th:value="${search}" placeholder="Search by date (YYYY-MM-DD)">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="sortBy" class="form-label">Sort By</label>
+                                <select class="form-select" id="sortBy" name="sortBy">
+                                    <option value="id" th:selected="${sortBy == 'id'}">ID</option>
+                                    <option value="date" th:selected="${sortBy == 'date'}">Date</option>
+                                    <option value="totalRevenue" th:selected="${sortBy == 'totalRevenue'}">Total Revenue</option>
+                                    <option value="createdAt" th:selected="${sortBy == 'createdAt'}">Created Date</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="sortDir" class="form-label">Order</label>
+                                <select class="form-select" id="sortDir" name="sortDir">
+                                    <option value="asc" th:selected="${sortDir == 'asc'}">Ascending</option>
+                                    <option value="desc" th:selected="${sortDir == 'desc'}">Descending</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="size" class="form-label">Items per page</label>
+                                <select class="form-select" id="size" name="size">
+                                    <option value="5" th:selected="${size == 5}">5</option>
+                                    <option value="10" th:selected="${size == 10}">10</option>
+                                    <option value="20" th:selected="${size == 20}">20</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Filter
+                                </button>
+                                <a href="/admin/revenue" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Clear
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Revenue Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        Revenue List
+                        <span class="badge bg-secondary" th:text="${totalItems}">0</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div th:if="${revenues.empty}" class="text-center py-5">
+                        <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No revenue records found</h4>
+                        <p class="text-muted">Revenue records will appear here once data is available.</p>
+                    </div>
+
+                    <div th:unless="${revenues.empty}" class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Date</th>
+                                <th>Booking ID</th>
+                                <th>Revenue</th>
+                                <th>Created</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="revenue : ${revenues}">
+                                <td th:text="${revenue.id}">1</td>
+                                <td>
+                                    <span th:text="${#temporals.format(revenue.date, 'dd/MM/yyyy')}">01/01/2024</span>
+                                </td>
+                                <td>
+                                    <a th:if="${revenue.bookingId != null}" 
+                                       th:href="@{/admin/bookings/{id}/edit(id=${revenue.bookingId})}"
+                                       class="text-primary">
+                                        <span th:text="${revenue.bookingId}">1</span>
+                                    </a>
+                                    <span th:if="${revenue.bookingId == null}" class="text-muted">N/A</span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-success" th:text="${#numbers.formatDecimal(revenue.totalRevenue, 0, 'COMMA', 2, 'POINT')} + ' VND'">0 VND</span>
+                                </td>
+                                <td>
+                                    <small th:text="${#temporals.format(revenue.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 12:00</small>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div th:unless="${revenues.empty}" class="d-flex justify-content-between align-items-center mt-4">
+                        <div>
+                            <span class="text-muted">
+                                Showing <span th:text="${revenues.number * revenues.size + 1}">1</span> to
+                                <span th:text="${revenues.number * revenues.size + revenues.numberOfElements}">10</span> of
+                                <span th:text="${revenues.totalElements}">100</span> entries
+                            </span>
+                        </div>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0">
+                                <li class="page-item" th:classappend="${!revenues.hasPrevious()} ? 'disabled'">
+                                    <a class="page-link" th:href="@{/admin/revenue(page=${revenues.number - 1}, size=${revenues.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}">Previous</a>
+                                </li>
+                                <li th:each="pageNum : ${#numbers.sequence(0, revenues.totalPages - 1)}"
+                                    class="page-item"
+                                    th:classappend="${pageNum == revenues.number} ? 'active'">
+                                    <a class="page-link"
+                                       th:href="@{/admin/revenue(page=${pageNum}, size=${revenues.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}"
+                                       th:text="${pageNum + 1}">1</a>
+                                </li>
+                                <li class="page-item" th:classappend="${!revenues.hasNext()} ? 'disabled'">
+                                    <a class="page-link" th:href="@{/admin/revenue(page=${revenues.number + 1}, size=${revenues.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}">Next</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{layouts/fragments :: scripts}"></div>
+</body>
+</html>
+

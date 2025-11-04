@@ -10,6 +10,7 @@ public final class AdminConstants {
     public static final String ACTIVE_PAGE_CATEGORIES = "categories";
     public static final String ACTIVE_PAGE_BOOKINGS = "bookings";
     public static final String ACTIVE_PAGE_REVIEWS = "reviews";
+    public static final String ACTIVE_PAGE_REVENUE = "revenue";
 
     public static final String ATTR_ACTIVE_PAGE = "activePage";
     public static final String ATTR_SUCCESS = "success";

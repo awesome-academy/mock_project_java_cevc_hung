@@ -112,13 +112,19 @@ public class BookingService {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(getMessage("booking.api.error.user.not_found", userId)));
         
-        Double amount = tour.getPrice().multiply(new java.math.BigDecimal(request.getQty())).doubleValue();
+        Double expectedAmount = tour.getPrice().multiply(new java.math.BigDecimal(request.getQty())).doubleValue();
+        
+        double tolerance = 0.01;
+        if (Math.abs(expectedAmount - request.getAmount()) > tolerance) {
+            throw new BusinessException(getMessage("booking.api.error.amount.mismatch", 
+                    expectedAmount, request.getAmount()));
+        }
         
         BookingEntity booking = BookingEntity.builder()
                 .tour(tour)
                 .user(user)
                 .qty(request.getQty())
-                .amount(amount)
+                .amount(request.getAmount())
                 .status(BookingEntity.Status.PENDING)
                 .build();
         
