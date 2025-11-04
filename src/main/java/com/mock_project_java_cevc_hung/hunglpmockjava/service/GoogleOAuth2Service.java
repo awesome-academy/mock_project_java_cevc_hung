@@ -49,7 +49,7 @@ public class GoogleOAuth2Service {
     }
 
     public String getPhoneFromToken(GoogleIdToken idToken) {
-        return (String) idToken.getPayload().get("phone_number");
+        return (String) idToken.getPayload().get("phoneNumber");
     }
     
     public String getAddressFromToken(GoogleIdToken idToken) {

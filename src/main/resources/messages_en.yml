@@ -87,3 +87,85 @@ booking:
         already_refunded: "Booking has been refunded"
         cannot_adjust_seats: "Cannot adjust seats. Not enough seats available. Available: {0}, Requested change: {1}"
 
+review:
+  # Management
+  management:
+    title: "Reviews Management"
+    list:
+      title: "Reviews List"
+      empty:
+        title: "No reviews found"
+        message: "Reviews will appear here once users submit feedback."
+  # Form labels
+  form:
+    search:
+      label: "Search"
+      placeholder: "Search by content, tour, or user"
+    sort:
+      by: "Sort By"
+      order: "Order"
+      itemsPerPage: "Items per page"
+  # Table headers
+  table:
+    id: "ID"
+    tour: "Tour"
+    user: "User"
+    rating: "Rating"
+    content: "Content"
+    type: "Type"
+    status: "Status"
+    likes: "Likes"
+    created: "Created"
+    actions: "Actions"
+  # Status labels
+  status:
+    pending: "Pending"
+    approved: "Approved"
+    rejected: "Rejected"
+  # Type labels
+  type:
+    place: "Place"
+    food: "Food"
+    news: "News"
+  # Actions
+  actions:
+    approve: "Approve"
+    reject: "Reject"
+    delete: "Delete"
+    filter: "Filter"
+    clear: "Clear"
+  # Confirmations
+  confirm:
+    approve: "Are you sure you want to approve this review?"
+    reject: "Are you sure you want to reject this review?"
+    delete: "Are you sure you want to delete this review?"
+  # Messages
+  approve:
+    success: "Review approved successfully!"
+    error: "Error approving review: {0}"
+  reject:
+    success: "Review rejected successfully!"
+    error: "Error rejecting review: {0}"
+  delete:
+    success: "Review deleted successfully!"
+    error: "Error deleting review: {0}"
+  # Pagination
+  pagination:
+    showing: "Showing"
+    to: "to"
+    of: "of"
+    entries: "entries"
+    previous: "Previous"
+    next: "Next"
+  # API Error Messages
+  api:
+    error:
+      tour:
+        not_found: "Tour not found with id: {0}"
+      user:
+        not_found: "User not found with id: {0}"
+        own_review_required: "You can only modify your own reviews"
+      review:
+        not_found: "Review not found with id: {0}"
+      already_reviewed: "You have already reviewed this tour"
+

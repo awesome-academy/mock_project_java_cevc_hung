@@ -38,7 +38,7 @@ public class UserController {
         response.put("name", user.getName() != null ? user.getName() : "");
         response.put("email", user.getEmail() != null ? user.getEmail() : "");
         response.put("address", user.getAddress() != null ? user.getAddress() : "");
-        response.put("phone_number", user.getPhone_number() != null ? user.getPhone_number() : "");
+        response.put("phoneNumber", user.getPhoneNumber() != null ? user.getPhoneNumber() : "");
         response.put("role", user.getRole() != null ? user.getRole().name() : "");
         response.put("provider", user.getProvider() != null ? user.getProvider().name() : "");
         response.put("is_active", 1);

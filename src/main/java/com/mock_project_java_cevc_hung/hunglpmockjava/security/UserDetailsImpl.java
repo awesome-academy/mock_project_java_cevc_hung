@@ -84,4 +84,14 @@ public class UserDetailsImpl implements UserDetails {
     public boolean isEnabled() {
         return isActive;
     }
+
+    public boolean isAdmin() {
+        return authorities.stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+    }
+
+    public boolean isUser() {
+        return authorities.stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_USER"));
+    }
 }

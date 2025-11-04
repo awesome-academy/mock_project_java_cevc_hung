@@ -91,6 +91,36 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handle EmailAlreadyExistsException - 409 Conflict
+     */
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public Object handleEmailAlreadyExistsException(
+            EmailAlreadyExistsException ex,
+            HttpServletRequest request) {
+        
+        logger.warn("Email already exists: {}", ex.getMessage());
+        
+        if (isApiRequest(request)) {
+            Map<String, Object> errorResponse = createErrorResponse(
+                    HttpStatus.CONFLICT,
+                    "Email already exists",
+                    ex.getMessage(),
+                    request.getRequestURI()
+            );
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+        }
+        
+        // For MVC requests, redirect to appropriate page with error message
+        String redirectUrl = getDefaultRedirectUrl(request);
+        ModelAndView modelAndView = new ModelAndView("redirect:" + redirectUrl);
+        modelAndView.addObject("error", ex.getMessage());
+        
+        logger.info("MVC exception - Email already exists, redirecting to: {}", redirectUrl);
+        
+        return modelAndView;
+    }
+
+    /**
      * Handle RuntimeException - Generic runtime errors
      */
     @ExceptionHandler(RuntimeException.class)
@@ -225,6 +255,12 @@ public class GlobalExceptionHandler {
             return "/admin/categories";
         } else if (path.contains("/tours")) {
             return "/admin/tours";
+        } else if (path.contains("/users")) {
+            return "/admin/users";
+        } else if (path.contains("/reviews")) {
+            return "/admin/reviews";
+        } else if (path.contains("/bookings")) {
+            return "/admin/bookings";
         } else if (path.contains("/admin")) {
             return "/admin/dashboard";
         }

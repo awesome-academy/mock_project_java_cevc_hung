@@ -1,16 +1,19 @@
 package com.mock_project_java_cevc_hung.hunglpmockjava.controller;
 
+import com.mock_project_java_cevc_hung.hunglpmockjava.entity.BookingEntity;
 import com.mock_project_java_cevc_hung.hunglpmockjava.entity.UserEntity;
+import com.mock_project_java_cevc_hung.hunglpmockjava.repository.BookingRepository;
 import com.mock_project_java_cevc_hung.hunglpmockjava.repository.CategoryRepository;
 import com.mock_project_java_cevc_hung.hunglpmockjava.repository.TourRepository;
 import com.mock_project_java_cevc_hung.hunglpmockjava.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
@@ -19,11 +22,18 @@ public class AdminController {
     private final UserRepository userRepository;
     private final TourRepository tourRepository;
     private final CategoryRepository categoryRepository;
+    private final BookingRepository bookingRepository;
 
-    public AdminController(UserRepository userRepository, TourRepository tourRepository, CategoryRepository categoryRepository) {
+    public AdminController(
+            UserRepository userRepository,
+            TourRepository tourRepository,
+            CategoryRepository categoryRepository,
+            BookingRepository bookingRepository
+    ) {
         this.userRepository = userRepository;
         this.tourRepository = tourRepository;
         this.categoryRepository = categoryRepository;
+        this.bookingRepository = bookingRepository;
     }
     
     private void addAdminToModel(Model model) {
@@ -61,9 +71,15 @@ public class AdminController {
         long totalUsers = userRepository.count();
         long totalTours = tourRepository.count();
         long totalCategories = categoryRepository.count();
+        long totalBooking = bookingRepository.count();
+        List<UserEntity> recentUsers = userRepository.findTop5ByOrderByCreatedAtDesc();
+        List<BookingEntity> recentBookings = bookingRepository.findTop5ByOrderByCreatedAtDesc();
         model.addAttribute("totalUsers", totalUsers);
         model.addAttribute("totalTours", totalTours);
         model.addAttribute("totalCategories", totalCategories);
+        model.addAttribute("totalBooking", totalBooking);
+        model.addAttribute("recentUsers", recentUsers);
+        model.addAttribute("recentBookings", recentBookings);
 
         return "admin/dashboard";
     }
