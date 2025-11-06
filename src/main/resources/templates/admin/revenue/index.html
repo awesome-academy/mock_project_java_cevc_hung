@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layouts/fragments :: head(title='Revenue Management')}"></head>
+<head th:replace="~{layouts/fragments :: head(title=#{revenue.management.title})}"></head>
 <body>
 <div class="container-fluid">
     <div class="row">
@@ -10,7 +10,7 @@
         <!-- Main Content -->
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">Revenue Management</h1>
+                <h1 class="h2" th:text="#{revenue.management.title}">Revenue Management</h1>
             </div>
 
             <!-- Flash Messages -->
@@ -23,10 +23,9 @@
                         <div class="card-body">
                             <div class="row no-gutters align-items-center">
                                 <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                        Total Revenue</div>
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1" th:text="#{revenue.summary.total}">Total Revenue</div>
                                     <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                        <span th:text="${#numbers.formatDecimal(totalRevenue, 0, 'COMMA', 2, 'POINT')}">0.00</span> VND
+                                        <span th:replace="~{layouts/fragments :: currency(${totalRevenue}, #{currency.vnd})}">0.00 VND</span>
                                     </div>
                                 </div>
                                 <div class="col-auto">
@@ -44,28 +43,28 @@
                     <form method="get" action="/admin/revenue">
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label for="search" class="form-label">Search</label>
+                                <label for="search" class="form-label" th:text="#{revenue.form.search.label}">Search</label>
                                 <input type="text" class="form-control" id="search" name="search"
-                                       th:value="${search}" placeholder="Search by date (YYYY-MM-DD)">
+                                       th:value="${search}" th:placeholder="#{revenue.form.search.placeholder}">
                             </div>
                             <div class="col-md-3">
-                                <label for="sortBy" class="form-label">Sort By</label>
+                                <label for="sortBy" class="form-label" th:text="#{revenue.form.sort.by}">Sort By</label>
                                 <select class="form-select" id="sortBy" name="sortBy">
-                                    <option value="id" th:selected="${sortBy == 'id'}">ID</option>
-                                    <option value="date" th:selected="${sortBy == 'date'}">Date</option>
-                                    <option value="totalRevenue" th:selected="${sortBy == 'totalRevenue'}">Total Revenue</option>
-                                    <option value="createdAt" th:selected="${sortBy == 'createdAt'}">Created Date</option>
+                                    <option value="id" th:selected="${sortBy == 'id'}" th:text="#{revenue.table.id}">ID</option>
+                                    <option value="date" th:selected="${sortBy == 'date'}" th:text="#{revenue.table.date}">Date</option>
+                                    <option value="totalRevenue" th:selected="${sortBy == 'totalRevenue'}" th:text="#{revenue.table.total}">Total Revenue</option>
+                                    <option value="createdAt" th:selected="${sortBy == 'createdAt'}" th:text="#{revenue.table.created}">Created Date</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label for="sortDir" class="form-label">Order</label>
+                                <label for="sortDir" class="form-label" th:text="#{revenue.form.sort.order}">Order</label>
                                 <select class="form-select" id="sortDir" name="sortDir">
-                                    <option value="asc" th:selected="${sortDir == 'asc'}">Ascending</option>
-                                    <option value="desc" th:selected="${sortDir == 'desc'}">Descending</option>
+                                    <option value="asc" th:selected="${sortDir == 'asc'}" th:text="#{common.sort.asc}">Ascending</option>
+                                    <option value="desc" th:selected="${sortDir == 'desc'}" th:text="#{common.sort.desc}">Descending</option>
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <label for="size" class="form-label">Items per page</label>
+                                <label for="size" class="form-label" th:text="#{revenue.form.sort.itemsPerPage}">Items per page</label>
                                 <select class="form-select" id="size" name="size">
                                     <option value="5" th:selected="${size == 5}">5</option>
                                     <option value="10" th:selected="${size == 10}">10</option>
@@ -76,10 +75,10 @@
                         <div class="row mt-3">
                             <div class="col-12">
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-search"></i> Filter
+                                    <i class="fas fa-search"></i> <span th:text="#{common.actions.filter}">Filter</span>
                                 </button>
                                 <a href="/admin/revenue" class="btn btn-secondary">
-                                    <i class="fas fa-times"></i> Clear
+                                    <i class="fas fa-times"></i> <span th:text="#{common.actions.clear}">Clear</span>
                                 </a>
                             </div>
                         </div>
@@ -90,7 +89,7 @@
             <!-- Revenue Table -->
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">
+                    <h5 class="card-title mb-0" th:text="#{revenue.management.list.title}">
                         Revenue List
                         <span class="badge bg-secondary" th:text="${totalItems}">0</span>
                     </h5>
@@ -98,26 +97,26 @@
                 <div class="card-body">
                     <div th:if="${revenues.empty}" class="text-center py-5">
                         <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
-                        <h4 class="text-muted">No revenue records found</h4>
-                        <p class="text-muted">Revenue records will appear here once data is available.</p>
+                        <h4 class="text-muted" th:text="#{revenue.management.list.empty.title}">No revenue records found</h4>
+                        <p class="text-muted" th:text="#{revenue.management.list.empty.message}">Revenue records will appear here once data is available.</p>
                     </div>
 
                     <div th:unless="${revenues.empty}" class="table-responsive">
                         <table class="table table-hover">
                             <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Date</th>
-                                <th>Booking ID</th>
-                                <th>Revenue</th>
-                                <th>Created</th>
+                                <th th:text="#{revenue.table.id}">ID</th>
+                                <th th:text="#{revenue.table.date}">Date</th>
+                                <th th:text="#{revenue.table.bookingId}">Booking ID</th>
+                                <th th:text="#{revenue.table.total}">Revenue</th>
+                                <th th:text="#{revenue.table.created}">Created</th>
                             </tr>
                             </thead>
                             <tbody>
                             <tr th:each="revenue : ${revenues}">
                                 <td th:text="${revenue.id}">1</td>
                                 <td>
-                                    <span th:text="${#temporals.format(revenue.date, 'dd/MM/yyyy')}">01/01/2024</span>
+                                    <span th:replace="~{layouts/fragments :: date(${revenue.date}, 'dd/MM/yyyy')}">01/01/2024</span>
                                 </td>
                                 <td>
                                     <a th:if="${revenue.bookingId != null}" 
@@ -125,13 +124,13 @@
                                        class="text-primary">
                                         <span th:text="${revenue.bookingId}">1</span>
                                     </a>
-                                    <span th:if="${revenue.bookingId == null}" class="text-muted">N/A</span>
+                                    <span th:if="${revenue.bookingId == null}" class="text-muted" th:text="#{common.na}">N/A</span>
                                 </td>
                                 <td>
-                                    <span class="fw-bold text-success" th:text="${#numbers.formatDecimal(revenue.totalRevenue, 0, 'COMMA', 2, 'POINT')} + ' VND'">0 VND</span>
+                                    <span class="fw-bold text-success" th:replace="~{layouts/fragments :: currency(${revenue.totalRevenue}, #{currency.vnd})}">0 VND</span>
                                 </td>
                                 <td>
-                                    <small th:text="${#temporals.format(revenue.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 12:00</small>
+                                    <small th:replace="~{layouts/fragments :: date(${revenue.createdAt}, 'dd/MM/yyyy HH:mm')}">01/01/2024 12:00</small>
                                 </td>
                             </tr>
                             </tbody>
@@ -142,15 +141,19 @@
                     <div th:unless="${revenues.empty}" class="d-flex justify-content-between align-items-center mt-4">
                         <div>
                             <span class="text-muted">
-                                Showing <span th:text="${revenues.number * revenues.size + 1}">1</span> to
-                                <span th:text="${revenues.number * revenues.size + revenues.numberOfElements}">10</span> of
-                                <span th:text="${revenues.totalElements}">100</span> entries
+                                <span th:text="#{common.pagination.showing}">Showing</span>
+                                <span th:text="${revenues.number * revenues.size + 1}">1</span>
+                                <span th:text="#{common.pagination.to}">to</span>
+                                <span th:text="${revenues.number * revenues.size + revenues.numberOfElements}">10</span>
+                                <span th:text="#{common.pagination.of}">of</span>
+                                <span th:text="${revenues.totalElements}">100</span>
+                                <span th:text="#{common.pagination.entries}">entries</span>
                             </span>
                         </div>
                         <nav>
                             <ul class="pagination pagination-sm mb-0">
                                 <li class="page-item" th:classappend="${!revenues.hasPrevious()} ? 'disabled'">
-                                    <a class="page-link" th:href="@{/admin/revenue(page=${revenues.number - 1}, size=${revenues.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}">Previous</a>
+                                    <a class="page-link" th:href="@{/admin/revenue(page=${revenues.number - 1}, size=${revenues.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}" th:text="#{common.pagination.previous}">Previous</a>
                                 </li>
                                 <li th:each="pageNum : ${#numbers.sequence(0, revenues.totalPages - 1)}"
                                     class="page-item"
@@ -160,7 +163,7 @@
                                        th:text="${pageNum + 1}">1</a>
                                 </li>
                                 <li class="page-item" th:classappend="${!revenues.hasNext()} ? 'disabled'">
-                                    <a class="page-link" th:href="@{/admin/revenue(page=${revenues.number + 1}, size=${revenues.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}">Next</a>
+                                    <a class="page-link" th:href="@{/admin/revenue(page=${revenues.number + 1}, size=${revenues.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}" th:text="#{common.pagination.next}">Next</a>
                                 </li>
                             </ul>
                         </nav>

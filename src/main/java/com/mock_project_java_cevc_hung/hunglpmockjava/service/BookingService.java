@@ -14,7 +14,7 @@ import com.mock_project_java_cevc_hung.hunglpmockjava.repository.TourRepository;
 import com.mock_project_java_cevc_hung.hunglpmockjava.repository.UserRepository;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
@@ -29,17 +29,25 @@ import java.util.List;
 @Service
 @Transactional
 public class BookingService {
-    @Autowired
-    private BookingRepository bookingRepository;
-    
-    @Autowired
-    private TourRepository tourRepository;
-    
-    @Autowired
-    private UserRepository userRepository;
-    
-    @Autowired
-    private MessageSource messageSource;
+    private final BookingRepository bookingRepository;
+    private final TourRepository tourRepository;
+    private final UserRepository userRepository;
+    private final MessageSource messageSource;
+
+    @Value("${app.booking.amount-tolerance:0.01}")
+    private java.math.BigDecimal amountTolerance;
+
+    public BookingService(
+        BookingRepository bookingRepository,
+        TourRepository tourRepository,
+        UserRepository userRepository,
+        MessageSource messageSource
+    ) {
+        this.bookingRepository = bookingRepository;
+        this.tourRepository = tourRepository;
+        this.userRepository = userRepository;
+        this.messageSource = messageSource;
+    }
     
     private String getMessage(String code, Object... args) {
         return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
@@ -112,12 +120,14 @@ public class BookingService {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(getMessage("booking.api.error.user.not_found", userId)));
         
-        Double expectedAmount = tour.getPrice().multiply(new java.math.BigDecimal(request.getQty())).doubleValue();
-        
-        double tolerance = 0.01;
-        if (Math.abs(expectedAmount - request.getAmount()) > tolerance) {
-            throw new BusinessException(getMessage("booking.api.error.amount.mismatch", 
-                    expectedAmount, request.getAmount()));
+        java.math.BigDecimal expectedAmount = tour.getPrice().multiply(new java.math.BigDecimal(request.getQty()));
+
+        java.math.BigDecimal actualAmount = java.math.BigDecimal.valueOf(request.getAmount());
+        java.math.BigDecimal diff = expectedAmount.subtract(actualAmount).abs();
+        java.math.BigDecimal tolerance = amountTolerance != null ? amountTolerance : new java.math.BigDecimal("0.01");
+        if (diff.compareTo(tolerance) > 0) {
+            throw new BusinessException(getMessage("booking.api.error.amount.mismatch",
+                    expectedAmount, actualAmount));
         }
         
         BookingEntity booking = BookingEntity.builder()

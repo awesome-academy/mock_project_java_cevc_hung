@@ -47,5 +47,9 @@ public final class AdminConstants {
     public static final String MSG_USER_DELETE_ERROR = "user.delete.error";
     public static final String MSG_USER_NOT_FOUND = "user.not_found";
     public static final String MSG_EMAIL_ALREADY_EXISTS = "email.already_exists";
+
+    // Revenue
+    public static final String VIEW_BASE_REVENUE = "admin/revenue/";
+    public static final String VIEW_INDEX_REVENUE = VIEW_BASE_REVENUE + "index";
 }
 

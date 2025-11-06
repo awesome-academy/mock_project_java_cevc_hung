@@ -7,7 +7,6 @@ import com.mock_project_java_cevc_hung.hunglpmockjava.exception.ResourceNotFound
 import com.mock_project_java_cevc_hung.hunglpmockjava.repository.RevenueRepository;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
@@ -24,11 +23,14 @@ import java.util.List;
 @Transactional
 public class RevenueService {
     
-    @Autowired
-    private RevenueRepository revenueRepository;
+    private final RevenueRepository revenueRepository;
     
-    @Autowired
-    private MessageSource messageSource;
+    private final MessageSource messageSource;
+
+    public RevenueService(RevenueRepository revenueRepository, MessageSource messageSource) {
+        this.revenueRepository = revenueRepository;
+        this.messageSource = messageSource;
+    }
     
     private String getMessage(String code, Object... args) {
         return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
@@ -46,10 +48,8 @@ public class RevenueService {
     }
     
     public Double getTotalRevenue() {
-        List<RevenueEntity> revenues = revenueRepository.findAll();
-        return revenues.stream()
-                .mapToDouble(r -> r.getTotalRevenue() != null ? r.getTotalRevenue() : 0.0)
-                .sum();
+        Double sum = revenueRepository.sumTotalRevenue();
+        return sum != null ? sum : 0.0;
     }
     
     /**

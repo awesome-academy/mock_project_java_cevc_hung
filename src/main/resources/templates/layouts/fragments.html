@@ -87,6 +87,14 @@
             </ul>
         </div>
     </nav>
+
+    <th:block th:fragment="currency(value, unit)">
+        <span th:text="${#numbers.formatDecimal(value, 0, 'COMMA', 2, 'POINT')} + ' ' + ${unit}">0.00 VND</span>
+    </th:block>
+
+    <th:block th:fragment="date(value, pattern)">
+        <span th:text="${#temporals.format(value, pattern)}">01/01/2024</span>
+    </th:block>
 </body>
 </html>
 

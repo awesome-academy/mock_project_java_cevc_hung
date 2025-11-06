@@ -3,8 +3,10 @@ package com.mock_project_java_cevc_hung.hunglpmockjava.controller.api;
 import com.mock_project_java_cevc_hung.hunglpmockjava.dto.request.PaymentRequest;
 import com.mock_project_java_cevc_hung.hunglpmockjava.dto.response.PaymentResponse;
 import com.mock_project_java_cevc_hung.hunglpmockjava.service.PaymentService;
+import com.mock_project_java_cevc_hung.hunglpmockjava.exception.BusinessException;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,11 +18,16 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "${app.cors.allowed-origins:*}")
 public class PaymentController {
 
-    @Autowired
-    private PaymentService paymentService;
+    private static final Logger logger = LoggerFactory.getLogger(PaymentController.class);
+
+    private final PaymentService paymentService;
+
+    public PaymentController(PaymentService paymentService) {
+        this.paymentService = paymentService;
+    }
 
     @PostMapping("/payments")
     @PreAuthorize("isAuthenticated()")
@@ -44,7 +51,8 @@ public class PaymentController {
         try {
             PaymentResponse response = paymentService.processPayment(request);
             return ResponseEntity.status(HttpStatus.OK).body(response);
-        } catch (Exception e) {
+        } catch (BusinessException e) {
+            logger.warn("Payment business error: {}", e.getMessage());
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("error", "Payment processing failed");
             errorResponse.put("message", e.getMessage());
