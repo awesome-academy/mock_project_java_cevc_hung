@@ -6,6 +6,7 @@ import com.mock_project_java_cevc_hung.hunglpmockjava.repository.BookingReposito
 import com.mock_project_java_cevc_hung.hunglpmockjava.repository.CategoryRepository;
 import com.mock_project_java_cevc_hung.hunglpmockjava.repository.TourRepository;
 import com.mock_project_java_cevc_hung.hunglpmockjava.repository.UserRepository;
+import com.mock_project_java_cevc_hung.hunglpmockjava.service.RevenueService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -23,17 +24,20 @@ public class AdminController {
     private final TourRepository tourRepository;
     private final CategoryRepository categoryRepository;
     private final BookingRepository bookingRepository;
+    private final RevenueService revenueService;
 
     public AdminController(
             UserRepository userRepository,
             TourRepository tourRepository,
             CategoryRepository categoryRepository,
-            BookingRepository bookingRepository
+            BookingRepository bookingRepository,
+            RevenueService revenueService
     ) {
         this.userRepository = userRepository;
         this.tourRepository = tourRepository;
         this.categoryRepository = categoryRepository;
         this.bookingRepository = bookingRepository;
+        this.revenueService = revenueService;
     }
     
     private void addAdminToModel(Model model) {
@@ -72,12 +76,14 @@ public class AdminController {
         long totalTours = tourRepository.count();
         long totalCategories = categoryRepository.count();
         long totalBooking = bookingRepository.count();
+        Double totalRevenue = revenueService.getTotalRevenue();
         List<UserEntity> recentUsers = userRepository.findTop5ByOrderByCreatedAtDesc();
         List<BookingEntity> recentBookings = bookingRepository.findTop5ByOrderByCreatedAtDesc();
         model.addAttribute("totalUsers", totalUsers);
         model.addAttribute("totalTours", totalTours);
         model.addAttribute("totalCategories", totalCategories);
         model.addAttribute("totalBooking", totalBooking);
+        model.addAttribute("totalRevenue", totalRevenue != null ? totalRevenue : 0.0);
         model.addAttribute("recentUsers", recentUsers);
         model.addAttribute("recentBookings", recentBookings);
 

@@ -17,6 +17,9 @@ public class RevenueEntity extends BaseEntity {
     private LocalDate date;
     private Double totalRevenue;
     private Double tourRevenue;
-    private Double commissionRevenue;
     private Integer totalBookings;
+    
+    @ManyToOne
+    @JoinColumn(name = "booking_id")
+    private BookingEntity booking;
 }
