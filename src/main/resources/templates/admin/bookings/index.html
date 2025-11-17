@@ -140,9 +140,10 @@
                                             </button>
                                         </form>
                                         <!-- Cancel button for non-cancelled bookings -->
+
                                         <form th:action="@{/admin/bookings/{id}/cancel(id=${booking.id})}"
                                               method="post" class="d-inline"
-                                              th:if="${booking.status.name() != 'CANCELLED' and booking.status.name() != 'REFUNDED'}"
+                                              th:if="${booking.status.name() != 'CANCELLED' and booking.status.name() != 'REFUNDED' and booking.status.name() != 'PAID'}"
                                               th:onsubmit="'return confirm(\'' + #{booking.confirm.cancel} + '\')'">
                                             <button type="submit" class="btn btn-sm btn-outline-warning" th:title="#{booking.actions.cancel}">
                                                 <i class="fas fa-ban"></i>
