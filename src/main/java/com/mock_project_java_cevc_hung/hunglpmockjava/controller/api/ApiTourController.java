@@ -21,12 +21,13 @@ public class ApiTourController {
 
     @GetMapping("/tours")
     public ResponseEntity<ApiPaginatedResponse<ApiTourResponse>> getTours(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir,
-            @RequestParam(required = false) Long categoryId,
-            @RequestParam(required = false) String keyword) {
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "id") String sortBy,
+        @RequestParam(defaultValue = "desc") String sortDir,
+        @RequestParam(required = false) Long categoryId,
+        @RequestParam(required = false) String keyword
+    ) {
         
         try {
             if (page < 0) page = 0;
