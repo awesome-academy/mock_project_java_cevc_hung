@@ -37,6 +37,83 @@
                 </div>
             </div>
 
+            <!-- Revenue Chart -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-0" th:text="#{revenue.chart.monthly.title}">Revenue trend</h5>
+                            <small class="text-muted" th:text="#{revenue.chart.monthly.subtitle}">Last 6 months</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="revenueChart" height="120"></canvas>
+                </div>
+            </div>
+
+            <!-- Additional Charts -->
+            <div class="row mb-4">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <div class="card h-100">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0" th:text="#{revenue.chart.booking.title}">Monthly bookings overview</h6>
+                            <small class="text-muted" th:text="#{revenue.chart.booking.subtitle}">Volume trends</small>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="bookingChart" height="140"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0" th:text="#{revenue.chart.share.title}">Revenue contribution</h6>
+                            <small class="text-muted" th:text="#{revenue.chart.share.subtitle}">Month distribution</small>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="revenueShareChart" height="140"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category & Rating Charts -->
+            <div class="row mb-4">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <div class="card h-100">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0" th:text="#{revenue.chart.category.title}">Revenue by category</h6>
+                            <small class="text-muted" th:text="#{revenue.chart.category.subtitle}">Top performing categories</small>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${#lists.isEmpty(categoryRevenues)}" class="text-center text-muted py-4" th:text="#{revenue.chart.empty}">
+                                No data available
+                            </div>
+                            <div th:unless="${#lists.isEmpty(categoryRevenues)}">
+                                <canvas id="categoryRevenueChart" height="160"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0" th:text="#{revenue.chart.rating.title}">Top rated tours</h6>
+                            <small class="text-muted" th:text="#{revenue.chart.rating.subtitle}">Best feedback from travellers</small>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${#lists.isEmpty(topRatedTours)}" class="text-center text-muted py-4" th:text="#{revenue.chart.empty}">
+                                No data available
+                            </div>
+                            <div th:unless="${#lists.isEmpty(topRatedTours)}">
+                                <canvas id="topRatedTourChart" height="160"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Filters -->
             <div class="card mb-4">
                 <div class="card-body">
@@ -175,6 +252,27 @@
 </div>
 
 <div th:replace="~{layouts/fragments :: scripts}"></div>
+<script th:src="@{/vendor/chartjs/js/chart.umd.js}"></script>
+<script th:inline="javascript">
+    window.revenueChartLabels = /*[[${revenueChartLabels}]]*/ [];
+    window.revenueChartValues = /*[[${revenueChartValues}]]*/ [];
+    window.revenueChartBookings = /*[[${revenueChartBookings}]]*/ [];
+    window.categoryRevenueLabels = /*[[${categoryRevenueLabels}]]*/ [];
+    window.categoryRevenueValues = /*[[${categoryRevenueValues}]]*/ [];
+    window.categoryRevenueBookings = /*[[${categoryRevenueBookings}]]*/ [];
+    window.topRatedTourLabels = /*[[${topRatedTourLabels}]]*/ [];
+    window.topRatedTourRatings = /*[[${topRatedTourRatings}]]*/ [];
+    window.topRatedTourReviews = /*[[${topRatedTourReviews}]]*/ [];
+    window.revenueCurrency = /*[[#{currency.vnd}]]*/ 'VND';
+    window.i18nCategoryBookings = /*[[#{revenue.chart.category.bookings}]]*/ 'bookings';
+    window.i18nRatingReviews = /*[[#{revenue.chart.rating.reviews}]]*/ 'reviews';
+    window.i18nRevenueDataset = /*[[#{revenue.chart.monthly.dataset}]]*/ 'Revenue';
+    window.i18nBookingDataset = /*[[#{revenue.chart.booking.dataset}]]*/ 'Bookings';
+    window.i18nShareDataset = /*[[#{revenue.chart.share.dataset}]]*/ 'Revenue';
+    window.i18nCategoryDataset = /*[[#{revenue.chart.category.dataset}]]*/ 'Category revenue';
+    window.i18nRatingDataset = /*[[#{revenue.chart.rating.dataset}]]*/ 'Avg rating';
+</script>
+<script th:src="@{/js/revenue-charts.js}"></script>
 </body>
 </html>
 

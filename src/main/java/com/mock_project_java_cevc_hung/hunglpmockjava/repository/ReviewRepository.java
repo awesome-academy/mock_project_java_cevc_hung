@@ -1,6 +1,7 @@
 package com.mock_project_java_cevc_hung.hunglpmockjava.repository;
 
 import com.mock_project_java_cevc_hung.hunglpmockjava.entity.ReviewEntity;
+import com.mock_project_java_cevc_hung.hunglpmockjava.repository.projection.TopRatedTourProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,4 +26,22 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long>, Jpa
     
     @Query("SELECT COUNT(r) > 0 FROM ReviewEntity r WHERE r.tour.id = :tourId AND r.user.id = :userId")
     boolean existsByTourIdAndUserId(@Param("tourId") Long tourId, @Param("userId") Long userId);
+
+    @Query(
+            value = """
+                    SELECT t.id AS tourId,
+                           t.title AS tourTitle,
+                           COALESCE(AVG(r.rating), 0) AS avgRating,
+                           COUNT(r.id) AS totalReviews
+                    FROM reviews r
+                    JOIN tours t ON r.tour_id = t.id
+                    WHERE r.status = :status
+                    GROUP BY t.id, t.title
+                    HAVING COUNT(r.id) > 0
+                    ORDER BY avgRating DESC, totalReviews DESC
+                    LIMIT :limit
+                    """,
+            nativeQuery = true
+    )
+    List<TopRatedTourProjection> findTopRatedTours(@Param("status") String status, @Param("limit") int limit);
 }
