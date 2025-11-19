@@ -3,9 +3,10 @@ package com.mock_project_java_cevc_hung.hunglpmockjava.service;
 import com.mock_project_java_cevc_hung.hunglpmockjava.dto.request.PaymentRequest;
 import com.mock_project_java_cevc_hung.hunglpmockjava.dto.response.PaymentResponse;
 import com.mock_project_java_cevc_hung.hunglpmockjava.entity.BookingEntity;
-import com.mock_project_java_cevc_hung.hunglpmockjava.entity.RevenueEntity;
 import com.mock_project_java_cevc_hung.hunglpmockjava.exception.BusinessException;
 import com.mock_project_java_cevc_hung.hunglpmockjava.exception.ResourceNotFoundException;
+import com.mock_project_java_cevc_hung.hunglpmockjava.messaging.event.PaymentCompletedEvent;
+import com.mock_project_java_cevc_hung.hunglpmockjava.messaging.publisher.PaymentEventPublisher;
 import com.mock_project_java_cevc_hung.hunglpmockjava.repository.BookingRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,21 +14,25 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
 @Transactional
 public class PaymentService {
-    
-    @Autowired
-    private BookingRepository bookingRepository;
-    
-    @Autowired
-    private RevenueService revenueService;
-    
-    @Autowired
-    private MessageSource messageSource;
+
+    private final BookingRepository bookingRepository;
+    private final MessageSource messageSource;
+    private final PaymentEventPublisher paymentEventPublisher;
+
+    public PaymentService(
+        BookingRepository bookingRepository,
+        MessageSource messageSource,
+        PaymentEventPublisher paymentEventPublisher
+    ) {
+        this.bookingRepository = bookingRepository;
+        this.messageSource = messageSource;
+        this.paymentEventPublisher = paymentEventPublisher;
+    }
     
     private String getMessage(String code, Object... args) {
         return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
@@ -58,21 +63,21 @@ public class PaymentService {
             throw new BusinessException(getMessage("payment.error.payment_ref.required"));
         }
         
-        booking.setStatus(BookingEntity.Status.PAID);
-        booking.setPaymentRef(request.getPaymentRef());
-        booking.setPaidAt(LocalDateTime.now());
-        BookingEntity savedBooking = bookingRepository.save(booking);
-        
-        LocalDate paymentDate = LocalDate.now();
-        RevenueEntity revenue = revenueService.createRevenueForPayment(paymentDate, request.getAmount(), savedBooking);
+        LocalDateTime paidAt = LocalDateTime.now();
+
+        paymentEventPublisher.publishPaymentCompleted(PaymentCompletedEvent.builder()
+                .bookingId(booking.getId())
+                .amount(request.getAmount())
+                .paymentRef(request.getPaymentRef())
+                .paidAt(paidAt)
+                .build());
         
         return PaymentResponse.builder()
-            .bookingId(savedBooking.getId())
-            .paymentRef(savedBooking.getPaymentRef())
-            .amount(savedBooking.getAmount())
-            .status(savedBooking.getStatus().name())
+            .bookingId(booking.getId())
+            .paymentRef(request.getPaymentRef())
+            .amount(request.getAmount())
+            .status(BookingEntity.Status.PENDING.name())
             .message(getMessage("payment.success"))
-            .revenueId(revenue.getId())
             .build();
     }
 }
