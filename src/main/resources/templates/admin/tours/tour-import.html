@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layouts/fragments :: head(title='Import Tours')}"></head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav th:replace="~{layouts/fragments :: sidebar(${activePage})}"></nav>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div
+                    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Import Tours</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a href="/admin/tours" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Tours
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Flash Messages -->
+                <div th:replace="~{layouts/fragments :: flash-messages}"></div>
+
+                <!-- Import Instructions -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-info-circle"></i> Import Instructions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <ol>
+                            <li>Download the CSV template below</li>
+                            <li>Fill in tour information following the template format</li>
+                            <li>Date format: <code>yyyy-MM-dd HH:mm:ss</code> (example: 2024-12-25 10:30:00)</li>
+                            <li>Status: <code>ACTIVE</code> or <code>INACTIVE</code> (leave empty for ACTIVE by default)
+                            </li>
+                            <li>Category Name: Must match an existing category name exactly</li>
+                            <li>Upload the completed CSV file using the form below</li>
+                        </ol>
+                        <div class="alert alert-warning" role="alert">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Important:</strong> Make sure category names exist in the system before importing.
+                            Non-existent categories will cause import errors.
+                        </div>
+                        <a href="/admin/tours/import-template" class="btn btn-success">
+                            <i class="fas fa-download"></i> Download CSV Template
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Upload Form -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-upload"></i> Upload CSV File
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="/admin/tours/import" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="file" class="form-label">Select CSV File</label>
+                                <input type="file" class="form-control" id="file" name="file" accept=".csv" required>
+                                <div class="form-text">Only CSV files are accepted</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload"></i> Import Tours
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Import Results -->
+                <div th:if="${result != null}" class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-chart-bar"></i> Import Results
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <h6 class="card-subtitle mb-2 text-muted">Total Rows</h6>
+                                        <h2 class="card-title" th:text="${result.totalRows}">0</h2>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card text-center border-success">
+                                    <div class="card-body">
+                                        <h6 class="card-subtitle mb-2 text-muted">Success</h6>
+                                        <h2 class="card-title text-success" th:text="${result.successCount}">0</h2>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card text-center border-danger">
+                                    <div class="card-body">
+                                        <h6 class="card-subtitle mb-2 text-muted">Errors</h6>
+                                        <h2 class="card-title text-danger" th:text="${result.errorCount}">0</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Error Details -->
+                        <div th:if="${result.errorCount > 0}" class="mt-4">
+                            <h5 class="text-danger">
+                                <i class="fas fa-exclamation-circle"></i> Error Details
+                            </h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Row Number</th>
+                                            <th>Error Message</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="error : ${result.errors}">
+                                            <td>
+                                                <span class="badge bg-danger" th:text="${error.rowNumber}">1</span>
+                                            </td>
+                                            <td th:text="${error.message}">Error message</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Success Message -->
+                        <div th:if="${result.errorCount == 0 && result.successCount > 0}" class="alert alert-success">
+                            <i class="fas fa-check-circle"></i>
+                            All tours imported successfully! You can now view them in the tours list.
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="~{layouts/fragments :: scripts}"></div>
+</body>
+
+</html>

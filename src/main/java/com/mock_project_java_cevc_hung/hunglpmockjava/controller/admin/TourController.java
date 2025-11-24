@@ -4,9 +4,11 @@ import com.mock_project_java_cevc_hung.hunglpmockjava.dto.request.AdminPageReque
 import com.mock_project_java_cevc_hung.hunglpmockjava.dto.request.TourCreateRequest;
 import com.mock_project_java_cevc_hung.hunglpmockjava.dto.request.TourUpdateRequest;
 import com.mock_project_java_cevc_hung.hunglpmockjava.dto.response.CategoryResponse;
+import com.mock_project_java_cevc_hung.hunglpmockjava.dto.response.TourImportResult;
 import com.mock_project_java_cevc_hung.hunglpmockjava.dto.response.TourResponse;
 import com.mock_project_java_cevc_hung.hunglpmockjava.entity.TourEntity;
 import com.mock_project_java_cevc_hung.hunglpmockjava.service.CategoryService;
+import com.mock_project_java_cevc_hung.hunglpmockjava.service.TourImportExportService;
 import com.mock_project_java_cevc_hung.hunglpmockjava.service.TourService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,12 +16,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Controller
@@ -37,11 +44,13 @@ public class TourController {
 
     private final TourService tourService;
     private final CategoryService categoryService;
+    private final TourImportExportService importExportService;
 
     @Autowired
-    public TourController(TourService tourService, CategoryService categoryService) {
+    public TourController(TourService tourService, CategoryService categoryService, TourImportExportService importExportService) {
         this.tourService = tourService;
         this.categoryService = categoryService;
+        this.importExportService = importExportService;
     }
 
     @GetMapping("/tours")
@@ -191,5 +200,88 @@ public class TourController {
             redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "Error updating tour status: " + e.getMessage());
         }
         return REDIRECT_TOURS;
+    }
+
+    @GetMapping("/tours/export")
+    public ResponseEntity<byte[]> exportTours() {
+        try {
+            String csv = importExportService.exportToursToCSV();
+            byte[] bytes = csv.getBytes(StandardCharsets.UTF_8);
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("text/csv"));
+            headers.setContentDispositionFormData("attachment", "tours_export.csv");
+            headers.setContentLength(bytes.length);
+            
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(bytes);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    @GetMapping("/tours/import-template")
+    public ResponseEntity<byte[]> downloadImportTemplate() {
+        try {
+            String csv = importExportService.generateCSVTemplate();
+            byte[] bytes = csv.getBytes(StandardCharsets.UTF_8);
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("text/csv"));
+            headers.setContentDispositionFormData("attachment", "tours_import_template.csv");
+            headers.setContentLength(bytes.length);
+            
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(bytes);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    @GetMapping("/tours/import")
+    public String importToursPage(Model model) {
+        model.addAttribute(AdminConstants.ATTR_ACTIVE_PAGE, AdminConstants.ACTIVE_PAGE_TOURS);
+        return VIEW_BASE + "tour-import";
+    }
+    
+    @PostMapping("/tours/import")
+    public String importTours(
+            @RequestParam("file") MultipartFile file,
+            RedirectAttributes redirectAttributes,
+            Model model
+    ) {
+        if (file.isEmpty()) {
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "Please select a file to upload");
+            return "redirect:" + BASE_PATH + "/import";
+        }
+        
+        if (!file.getOriginalFilename().endsWith(".csv")) {
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "Only CSV files are allowed");
+            return "redirect:" + BASE_PATH + "/import";
+        }
+        
+        try {
+            TourImportResult result = importExportService.importToursFromCSV(file);
+            
+            model.addAttribute("result", result);
+            model.addAttribute(AdminConstants.ATTR_ACTIVE_PAGE, AdminConstants.ACTIVE_PAGE_TOURS);
+            
+            if (result.getErrorCount() == 0) {
+                model.addAttribute(AdminConstants.ATTR_SUCCESS, 
+                    "Import completed successfully! " + result.getSuccessCount() + " tours imported.");
+            } else {
+                model.addAttribute(AdminConstants.ATTR_WARNING, 
+                    "Import completed with errors. " + result.getSuccessCount() + " tours imported, " + 
+                    result.getErrorCount() + " failed.");
+            }
+            
+            return VIEW_BASE + "tour-import";
+            
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute(AdminConstants.ATTR_ERROR, "Error importing tours: " + e.getMessage());
+            return "redirect:" + BASE_PATH + "/import";
+        }
     }
 }

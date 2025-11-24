@@ -196,6 +196,84 @@ public class RevenueService {
                 .build();
     }
 
+    /**
+     * Export monthly revenue data to CSV
+     */
+    public String exportMonthlyRevenueToCSV(int monthsBack) {
+        List<MonthlyRevenueDTO> data = getRevenueChartData(monthsBack);
+        StringBuilder csv = new StringBuilder();
+        
+        csv.append("Period,Month,Total Revenue,Total Bookings\n");
+        
+        for (MonthlyRevenueDTO dto : data) {
+            csv.append(escapeCsv(dto.getPeriod())).append(",");
+            csv.append(escapeCsv(dto.getLabel())).append(",");
+            csv.append(escapeCsv(dto.getTotalRevenue() != null ? dto.getTotalRevenue().toString() : "0")).append(",");
+            csv.append(escapeCsv(dto.getTotalBookings() != null ? dto.getTotalBookings().toString() : "0"));
+            csv.append("\n");
+        }
+        
+        return csv.toString();
+    }
+
+    /**
+     * Export category revenue data to CSV
+     */
+    public String exportCategoryRevenueToCSV(int limit) {
+        List<CategoryRevenueDTO> data = getTopCategoriesByRevenue(limit);
+        StringBuilder csv = new StringBuilder();
+        
+        csv.append("Category ID,Category Name,Total Revenue,Total Bookings\n");
+        
+        for (CategoryRevenueDTO dto : data) {
+            csv.append(escapeCsv(dto.getCategoryId() != null ? dto.getCategoryId().toString() : "")).append(",");
+            csv.append(escapeCsv(dto.getLabel())).append(",");
+            csv.append(escapeCsv(dto.getTotalRevenue() != null ? dto.getTotalRevenue().toString() : "0")).append(",");
+            csv.append(escapeCsv(dto.getTotalBookings() != null ? dto.getTotalBookings().toString() : "0"));
+            csv.append("\n");
+        }
+        
+        return csv.toString();
+    }
+
+    /**
+     * Export all revenue records to CSV
+     */
+    public String exportAllRevenuesToCSV() {
+        List<RevenueEntity> revenues = revenueRepository.findAll();
+        StringBuilder csv = new StringBuilder();
+        
+        csv.append("ID,Date,Total Revenue,Tour Revenue,Total Bookings,Booking ID,Created At,Updated At\n");
+        
+        for (RevenueEntity revenue : revenues) {
+            csv.append(escapeCsv(revenue.getId() != null ? revenue.getId().toString() : "")).append(",");
+            csv.append(escapeCsv(revenue.getDate() != null ? revenue.getDate().toString() : "")).append(",");
+            csv.append(escapeCsv(revenue.getTotalRevenue() != null ? revenue.getTotalRevenue().toString() : "0")).append(",");
+            csv.append(escapeCsv(revenue.getTourRevenue() != null ? revenue.getTourRevenue().toString() : "0")).append(",");
+            csv.append(escapeCsv(revenue.getTotalBookings() != null ? revenue.getTotalBookings().toString() : "0")).append(",");
+            csv.append(escapeCsv(revenue.getBooking() != null && revenue.getBooking().getId() != null ? 
+                    revenue.getBooking().getId().toString() : "")).append(",");
+            csv.append(escapeCsv(revenue.getCreatedAt() != null ? revenue.getCreatedAt().toString() : "")).append(",");
+            csv.append(escapeCsv(revenue.getUpdatedAt() != null ? revenue.getUpdatedAt().toString() : ""));
+            csv.append("\n");
+        }
+        
+        return csv.toString();
+    }
+
+    /**
+     * Escape CSV special characters
+     */
+    private String escapeCsv(String value) {
+        if (value == null) {
+            return "";
+        }
+        if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
+    }
+
     private RevenueEntity findRevenueById(Long id) {
         return revenueRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(getMessage("revenue.error.not_found", id)));
