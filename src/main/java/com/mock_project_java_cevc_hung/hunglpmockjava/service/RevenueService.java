@@ -34,19 +34,19 @@ import java.util.Map;
 @Service
 @Transactional
 public class RevenueService {
-    
+
     private final RevenueRepository revenueRepository;
     private final ReviewRepository reviewRepository;
     private final MessageSource messageSource;
 
     public RevenueService(RevenueRepository revenueRepository,
-                          ReviewRepository reviewRepository,
-                          MessageSource messageSource) {
+            ReviewRepository reviewRepository,
+            MessageSource messageSource) {
         this.revenueRepository = revenueRepository;
         this.reviewRepository = reviewRepository;
         this.messageSource = messageSource;
     }
-    
+
     private String getMessage(String code, Object... args) {
         return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
     }
@@ -61,7 +61,7 @@ public class RevenueService {
         RevenueEntity revenue = findRevenueById(id);
         return convertToResponse(revenue);
     }
-    
+
     public Double getTotalRevenue() {
         Double sum = revenueRepository.sumTotalRevenue();
         return sum != null ? sum : 0.0;
@@ -96,11 +96,11 @@ public class RevenueService {
             Double revenueValue = revenueMap.getOrDefault(key, 0.0);
             Integer bookingsValue = bookingMap.getOrDefault(key, 0);
             chartData.add(MonthlyRevenueDTO.builder()
-                .period(key)
-                .label(label)
-                .totalRevenue(revenueValue)
-                .totalBookings(bookingsValue)
-                .build());
+                    .period(key)
+                    .label(label)
+                    .totalRevenue(revenueValue)
+                    .totalBookings(bookingsValue)
+                    .build());
         }
 
         return chartData;
@@ -114,11 +114,11 @@ public class RevenueService {
         List<CategoryRevenueDTO> results = new ArrayList<>();
         for (CategoryRevenueProjection row : rows) {
             results.add(CategoryRevenueDTO.builder()
-                .categoryId(row.getCategoryId())
-                .label(row.getCategoryName())
-                .totalRevenue(row.getTotalRevenue())
-                .totalBookings(row.getTotalBookings())
-                .build());
+                    .categoryId(row.getCategoryId())
+                    .label(row.getCategoryName())
+                    .totalRevenue(row.getTotalRevenue())
+                    .totalBookings(row.getTotalBookings())
+                    .build());
         }
         return results;
     }
@@ -132,21 +132,22 @@ public class RevenueService {
         List<TopRatedTourDTO> results = new ArrayList<>();
         for (TopRatedTourProjection row : rows) {
             results.add(TopRatedTourDTO.builder()
-                .tourId(row.getTourId())
-                .label(row.getTourTitle())
-                .averageRating(row.getAvgRating())
-                .totalReviews(row.getTotalReviews())
-                .build());
+                    .tourId(row.getTourId())
+                    .label(row.getTourTitle())
+                    .averageRating(row.getAvgRating())
+                    .totalReviews(row.getTotalReviews())
+                    .build());
         }
         return results;
     }
-    
+
     /**
      * Create a new revenue record for each payment (one-to-one relationship)
      * This allows full traceability of each payment
-     * @param date The date of payment
+     * 
+     * @param date          The date of payment
      * @param bookingAmount The amount of the booking
-     * @param booking The booking entity for reference
+     * @param booking       The booking entity for reference
      * @return The created RevenueEntity
      */
     public RevenueEntity createRevenueForPayment(LocalDate date, Double bookingAmount, BookingEntity booking) {
@@ -157,28 +158,28 @@ public class RevenueService {
                 .totalBookings(1)
                 .booking(booking)
                 .build();
-        
+
         return revenueRepository.save(revenue);
     }
-    
+
     private Specification<RevenueEntity> createSearchSpecification(String search) {
         return (root, query, cb) -> {
             if (!StringUtils.hasText(search)) {
                 return cb.conjunction();
             }
             List<Predicate> predicates = new ArrayList<>();
-            
+
             try {
                 LocalDate searchDate = LocalDate.parse(search);
                 predicates.add(cb.equal(root.get("date"), searchDate));
             } catch (Exception e) {
                 //
             }
-            
+
             if (predicates.isEmpty()) {
                 return cb.conjunction();
             }
-            
+
             return cb.or(predicates.toArray(new Predicate[0]));
         };
     }
@@ -202,9 +203,9 @@ public class RevenueService {
     public String exportMonthlyRevenueToCSV(int monthsBack) {
         List<MonthlyRevenueDTO> data = getRevenueChartData(monthsBack);
         StringBuilder csv = new StringBuilder();
-        
+
         csv.append("Period,Month,Total Revenue,Total Bookings\n");
-        
+
         for (MonthlyRevenueDTO dto : data) {
             csv.append(escapeCsv(dto.getPeriod())).append(",");
             csv.append(escapeCsv(dto.getLabel())).append(",");
@@ -212,7 +213,7 @@ public class RevenueService {
             csv.append(escapeCsv(dto.getTotalBookings() != null ? dto.getTotalBookings().toString() : "0"));
             csv.append("\n");
         }
-        
+
         return csv.toString();
     }
 
@@ -222,9 +223,9 @@ public class RevenueService {
     public String exportCategoryRevenueToCSV(int limit) {
         List<CategoryRevenueDTO> data = getTopCategoriesByRevenue(limit);
         StringBuilder csv = new StringBuilder();
-        
+
         csv.append("Category ID,Category Name,Total Revenue,Total Bookings\n");
-        
+
         for (CategoryRevenueDTO dto : data) {
             csv.append(escapeCsv(dto.getCategoryId() != null ? dto.getCategoryId().toString() : "")).append(",");
             csv.append(escapeCsv(dto.getLabel())).append(",");
@@ -232,7 +233,7 @@ public class RevenueService {
             csv.append(escapeCsv(dto.getTotalBookings() != null ? dto.getTotalBookings().toString() : "0"));
             csv.append("\n");
         }
-        
+
         return csv.toString();
     }
 
@@ -242,32 +243,44 @@ public class RevenueService {
     public String exportAllRevenuesToCSV() {
         List<RevenueEntity> revenues = revenueRepository.findAll();
         StringBuilder csv = new StringBuilder();
-        
+
         csv.append("ID,Date,Total Revenue,Tour Revenue,Total Bookings,Booking ID,Created At,Updated At\n");
-        
+
         for (RevenueEntity revenue : revenues) {
             csv.append(escapeCsv(revenue.getId() != null ? revenue.getId().toString() : "")).append(",");
             csv.append(escapeCsv(revenue.getDate() != null ? revenue.getDate().toString() : "")).append(",");
-            csv.append(escapeCsv(revenue.getTotalRevenue() != null ? revenue.getTotalRevenue().toString() : "0")).append(",");
-            csv.append(escapeCsv(revenue.getTourRevenue() != null ? revenue.getTourRevenue().toString() : "0")).append(",");
-            csv.append(escapeCsv(revenue.getTotalBookings() != null ? revenue.getTotalBookings().toString() : "0")).append(",");
-            csv.append(escapeCsv(revenue.getBooking() != null && revenue.getBooking().getId() != null ? 
-                    revenue.getBooking().getId().toString() : "")).append(",");
+            csv.append(escapeCsv(revenue.getTotalRevenue() != null ? revenue.getTotalRevenue().toString() : "0"))
+                    .append(",");
+            csv.append(escapeCsv(revenue.getTourRevenue() != null ? revenue.getTourRevenue().toString() : "0"))
+                    .append(",");
+            csv.append(escapeCsv(revenue.getTotalBookings() != null ? revenue.getTotalBookings().toString() : "0"))
+                    .append(",");
+            csv.append(escapeCsv(revenue.getBooking() != null && revenue.getBooking().getId() != null
+                    ? revenue.getBooking().getId().toString()
+                    : "")).append(",");
             csv.append(escapeCsv(revenue.getCreatedAt() != null ? revenue.getCreatedAt().toString() : "")).append(",");
             csv.append(escapeCsv(revenue.getUpdatedAt() != null ? revenue.getUpdatedAt().toString() : ""));
             csv.append("\n");
         }
-        
+
         return csv.toString();
     }
 
     /**
-     * Escape CSV special characters
+     * Escape CSV special characters and prevent CSV injection
      */
     private String escapeCsv(String value) {
         if (value == null) {
             return "";
         }
+
+        if (!value.isEmpty()) {
+            char firstChar = value.charAt(0);
+            if (firstChar == '=' || firstChar == '+' || firstChar == '-' || firstChar == '@') {
+                value = "'" + value;
+            }
+        }
+
         if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
             return "\"" + value.replace("\"", "\"\"") + "\"";
         }
