@@ -15,6 +15,7 @@ public final class AdminConstants {
     public static final String ATTR_ACTIVE_PAGE = "activePage";
     public static final String ATTR_SUCCESS = "success";
     public static final String ATTR_ERROR = "error";
+    public static final String ATTR_WARNING = "warning";
     
     // Booking
     public static final String MSG_BOOKING_LOAD_ERROR = "booking.load.error";

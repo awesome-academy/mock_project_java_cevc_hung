@@ -12,12 +12,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -129,6 +133,66 @@ public class RevenueController {
             model.addAttribute("topRatedTourReviews", Collections.emptyList());
             model.addAttribute(AdminConstants.ATTR_ACTIVE_PAGE, AdminConstants.ACTIVE_PAGE_REVENUE);
             return AdminConstants.VIEW_INDEX_REVENUE;
+        }
+    }
+
+    @GetMapping("/export/monthly")
+    public ResponseEntity<byte[]> exportMonthlyRevenue() {
+        try {
+            String csv = revenueService.exportMonthlyRevenueToCSV(MONTHS_IN_CHART);
+            byte[] bytes = csv.getBytes(StandardCharsets.UTF_8);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("text/csv"));
+            headers.setContentDispositionFormData("attachment", "revenue_monthly.csv");
+            headers.setContentLength(bytes.length);
+
+            return ResponseEntity.ok()
+                .headers(headers)
+                .body(bytes);
+        } catch (Exception e) {
+            logger.error("Failed to export monthly revenue: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/export/categories")
+    public ResponseEntity<byte[]> exportCategoryRevenue() {
+        try {
+            String csv = revenueService.exportCategoryRevenueToCSV(TOP_CATEGORY_LIMIT);
+            byte[] bytes = csv.getBytes(StandardCharsets.UTF_8);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("text/csv"));
+            headers.setContentDispositionFormData("attachment", "revenue_by_category.csv");
+            headers.setContentLength(bytes.length);
+
+            return ResponseEntity.ok()
+                .headers(headers)
+                .body(bytes);
+        } catch (Exception e) {
+            logger.error("Failed to export category revenue: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/export/all")
+    public ResponseEntity<byte[]> exportAllRevenues() {
+        try {
+            String csv = revenueService.exportAllRevenuesToCSV();
+            byte[] bytes = csv.getBytes(StandardCharsets.UTF_8);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("text/csv"));
+            headers.setContentDispositionFormData("attachment", "all_revenues.csv");
+            headers.setContentLength(bytes.length);
+
+            return ResponseEntity.ok()
+                .headers(headers)
+                .body(bytes);
+        } catch (Exception e) {
+            logger.error("Failed to export all revenues: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 }

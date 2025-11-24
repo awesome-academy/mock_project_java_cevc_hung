@@ -1,278 +1,346 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head th:replace="~{layouts/fragments :: head(title=#{revenue.management.title})}"></head>
+
 <body>
-<div class="container-fluid">
-    <div class="row">
-        <!-- Sidebar -->
-        <nav th:replace="~{layouts/fragments :: sidebar(${activePage})}"></nav>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav th:replace="~{layouts/fragments :: sidebar(${activePage})}"></nav>
 
-        <!-- Main Content -->
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2" th:text="#{revenue.management.title}">Revenue Management</h1>
-            </div>
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div
+                    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2" th:text="#{revenue.management.title}">Revenue Management</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm btn-outline-success dropdown-toggle"
+                                data-bs-toggle="dropdown">
+                                <i class="fas fa-download"></i> Export CSV
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/admin/revenue/export/monthly">
+                                        <i class="fas fa-chart-line"></i> Monthly Revenue
+                                    </a></li>
+                                <li><a class="dropdown-item" href="/admin/revenue/export/categories">
+                                        <i class="fas fa-th-large"></i> Category Revenue
+                                    </a></li>
+                                <li><a class="dropdown-item" href="/admin/revenue/export/all">
+                                        <i class="fas fa-database"></i> All Revenue Records
+                                    </a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
 
-            <!-- Flash Messages -->
-            <div th:replace="~{layouts/fragments :: flash-messages}"></div>
+                <!-- Flash Messages -->
+                <div th:replace="~{layouts/fragments :: flash-messages}"></div>
 
-            <!-- Summary Card -->
-            <div class="row mb-4">
-                <div class="col-md-12">
-                    <div class="card border-left-primary shadow">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1" th:text="#{revenue.summary.total}">Total Revenue</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                        <span th:replace="~{layouts/fragments :: currency(${totalRevenue}, #{currency.vnd})}">0.00 VND</span>
+                <!-- Summary Card -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card border-left-primary shadow">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1"
+                                            th:text="#{revenue.summary.total}">Total Revenue</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                            <span
+                                                th:replace="~{layouts/fragments :: currency(${totalRevenue}, #{currency.vnd})}">0.00
+                                                VND</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
                                     </div>
                                 </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Revenue Chart -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title mb-0" th:text="#{revenue.chart.monthly.title}">Revenue trend</h5>
+                                <small class="text-muted" th:text="#{revenue.chart.monthly.subtitle}">Last 6
+                                    months</small>
+                            </div>
+                            <a href="/admin/revenue/export/monthly" class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="revenueChart" height="120"></canvas>
+                    </div>
+                </div>
+
+                <!-- Additional Charts -->
+                <div class="row mb-4">
+                    <div class="col-lg-6 mb-4 mb-lg-0">
+                        <div class="card h-100">
+                            <div class="card-header bg-white">
+                                <h6 class="mb-0" th:text="#{revenue.chart.booking.title}">Monthly bookings overview</h6>
+                                <small class="text-muted" th:text="#{revenue.chart.booking.subtitle}">Volume
+                                    trends</small>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="bookingChart" height="140"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-white">
+                                <h6 class="mb-0" th:text="#{revenue.chart.share.title}">Revenue contribution</h6>
+                                <small class="text-muted" th:text="#{revenue.chart.share.subtitle}">Month
+                                    distribution</small>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="revenueShareChart" height="140"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category & Rating Charts -->
+                <div class="row mb-4">
+                    <div class="col-lg-6 mb-4 mb-lg-0">
+                        <div class="card h-100">
+                            <div class="card-header bg-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0" th:text="#{revenue.chart.category.title}">Revenue by category
+                                        </h6>
+                                        <small class="text-muted" th:text="#{revenue.chart.category.subtitle}">Top
+                                            performing categories</small>
+                                    </div>
+                                    <a href="/admin/revenue/export/categories" class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div th:if="${#lists.isEmpty(categoryRevenues)}" class="text-center text-muted py-4"
+                                    th:text="#{revenue.chart.empty}">
+                                    No data available
+                                </div>
+                                <div th:unless="${#lists.isEmpty(categoryRevenues)}">
+                                    <canvas id="categoryRevenueChart" height="160"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-white">
+                                <h6 class="mb-0" th:text="#{revenue.chart.rating.title}">Top rated tours</h6>
+                                <small class="text-muted" th:text="#{revenue.chart.rating.subtitle}">Best feedback from
+                                    travellers</small>
+                            </div>
+                            <div class="card-body">
+                                <div th:if="${#lists.isEmpty(topRatedTours)}" class="text-center text-muted py-4"
+                                    th:text="#{revenue.chart.empty}">
+                                    No data available
+                                </div>
+                                <div th:unless="${#lists.isEmpty(topRatedTours)}">
+                                    <canvas id="topRatedTourChart" height="160"></canvas>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Revenue Chart -->
-            <div class="card mb-4">
-                <div class="card-header bg-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="card-title mb-0" th:text="#{revenue.chart.monthly.title}">Revenue trend</h5>
-                            <small class="text-muted" th:text="#{revenue.chart.monthly.subtitle}">Last 6 months</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <canvas id="revenueChart" height="120"></canvas>
-                </div>
-            </div>
-
-            <!-- Additional Charts -->
-            <div class="row mb-4">
-                <div class="col-lg-6 mb-4 mb-lg-0">
-                    <div class="card h-100">
-                        <div class="card-header bg-white">
-                            <h6 class="mb-0" th:text="#{revenue.chart.booking.title}">Monthly bookings overview</h6>
-                            <small class="text-muted" th:text="#{revenue.chart.booking.subtitle}">Volume trends</small>
-                        </div>
-                        <div class="card-body">
-                            <canvas id="bookingChart" height="140"></canvas>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="card h-100">
-                        <div class="card-header bg-white">
-                            <h6 class="mb-0" th:text="#{revenue.chart.share.title}">Revenue contribution</h6>
-                            <small class="text-muted" th:text="#{revenue.chart.share.subtitle}">Month distribution</small>
-                        </div>
-                        <div class="card-body">
-                            <canvas id="revenueShareChart" height="140"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Category & Rating Charts -->
-            <div class="row mb-4">
-                <div class="col-lg-6 mb-4 mb-lg-0">
-                    <div class="card h-100">
-                        <div class="card-header bg-white">
-                            <h6 class="mb-0" th:text="#{revenue.chart.category.title}">Revenue by category</h6>
-                            <small class="text-muted" th:text="#{revenue.chart.category.subtitle}">Top performing categories</small>
-                        </div>
-                        <div class="card-body">
-                            <div th:if="${#lists.isEmpty(categoryRevenues)}" class="text-center text-muted py-4" th:text="#{revenue.chart.empty}">
-                                No data available
+                <!-- Filters -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <form method="get" action="/admin/revenue">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="search" class="form-label"
+                                        th:text="#{revenue.form.search.label}">Search</label>
+                                    <input type="text" class="form-control" id="search" name="search"
+                                        th:value="${search}" th:placeholder="#{revenue.form.search.placeholder}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="sortBy" class="form-label" th:text="#{revenue.form.sort.by}">Sort
+                                        By</label>
+                                    <select class="form-select" id="sortBy" name="sortBy">
+                                        <option value="id" th:selected="${sortBy == 'id'}"
+                                            th:text="#{revenue.table.id}">ID</option>
+                                        <option value="date" th:selected="${sortBy == 'date'}"
+                                            th:text="#{revenue.table.date}">Date</option>
+                                        <option value="totalRevenue" th:selected="${sortBy == 'totalRevenue'}"
+                                            th:text="#{revenue.table.total}">Total Revenue</option>
+                                        <option value="createdAt" th:selected="${sortBy == 'createdAt'}"
+                                            th:text="#{revenue.table.created}">Created Date</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="sortDir" class="form-label"
+                                        th:text="#{revenue.form.sort.order}">Order</label>
+                                    <select class="form-select" id="sortDir" name="sortDir">
+                                        <option value="asc" th:selected="${sortDir == 'asc'}"
+                                            th:text="#{common.sort.asc}">Ascending</option>
+                                        <option value="desc" th:selected="${sortDir == 'desc'}"
+                                            th:text="#{common.sort.desc}">Descending</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="size" class="form-label"
+                                        th:text="#{revenue.form.sort.itemsPerPage}">Items per page</label>
+                                    <select class="form-select" id="size" name="size">
+                                        <option value="5" th:selected="${size == 5}">5</option>
+                                        <option value="10" th:selected="${size == 10}">10</option>
+                                        <option value="20" th:selected="${size == 20}">20</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div th:unless="${#lists.isEmpty(categoryRevenues)}">
-                                <canvas id="categoryRevenueChart" height="160"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="card h-100">
-                        <div class="card-header bg-white">
-                            <h6 class="mb-0" th:text="#{revenue.chart.rating.title}">Top rated tours</h6>
-                            <small class="text-muted" th:text="#{revenue.chart.rating.subtitle}">Best feedback from travellers</small>
-                        </div>
-                        <div class="card-body">
-                            <div th:if="${#lists.isEmpty(topRatedTours)}" class="text-center text-muted py-4" th:text="#{revenue.chart.empty}">
-                                No data available
-                            </div>
-                            <div th:unless="${#lists.isEmpty(topRatedTours)}">
-                                <canvas id="topRatedTourChart" height="160"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Filters -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <form method="get" action="/admin/revenue">
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <label for="search" class="form-label" th:text="#{revenue.form.search.label}">Search</label>
-                                <input type="text" class="form-control" id="search" name="search"
-                                       th:value="${search}" th:placeholder="#{revenue.form.search.placeholder}">
-                            </div>
-                            <div class="col-md-3">
-                                <label for="sortBy" class="form-label" th:text="#{revenue.form.sort.by}">Sort By</label>
-                                <select class="form-select" id="sortBy" name="sortBy">
-                                    <option value="id" th:selected="${sortBy == 'id'}" th:text="#{revenue.table.id}">ID</option>
-                                    <option value="date" th:selected="${sortBy == 'date'}" th:text="#{revenue.table.date}">Date</option>
-                                    <option value="totalRevenue" th:selected="${sortBy == 'totalRevenue'}" th:text="#{revenue.table.total}">Total Revenue</option>
-                                    <option value="createdAt" th:selected="${sortBy == 'createdAt'}" th:text="#{revenue.table.created}">Created Date</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="sortDir" class="form-label" th:text="#{revenue.form.sort.order}">Order</label>
-                                <select class="form-select" id="sortDir" name="sortDir">
-                                    <option value="asc" th:selected="${sortDir == 'asc'}" th:text="#{common.sort.asc}">Ascending</option>
-                                    <option value="desc" th:selected="${sortDir == 'desc'}" th:text="#{common.sort.desc}">Descending</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <label for="size" class="form-label" th:text="#{revenue.form.sort.itemsPerPage}">Items per page</label>
-                                <select class="form-select" id="size" name="size">
-                                    <option value="5" th:selected="${size == 5}">5</option>
-                                    <option value="10" th:selected="${size == 10}">10</option>
-                                    <option value="20" th:selected="${size == 20}">20</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row mt-3">
-                            <div class="col-12">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-search"></i> <span th:text="#{common.actions.filter}">Filter</span>
-                                </button>
-                                <a href="/admin/revenue" class="btn btn-secondary">
-                                    <i class="fas fa-times"></i> <span th:text="#{common.actions.clear}">Clear</span>
-                                </a>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Revenue Table -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0" th:text="#{revenue.management.list.title}">
-                        Revenue List
-                        <span class="badge bg-secondary" th:text="${totalItems}">0</span>
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div th:if="${revenues.empty}" class="text-center py-5">
-                        <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
-                        <h4 class="text-muted" th:text="#{revenue.management.list.empty.title}">No revenue records found</h4>
-                        <p class="text-muted" th:text="#{revenue.management.list.empty.message}">Revenue records will appear here once data is available.</p>
-                    </div>
-
-                    <div th:unless="${revenues.empty}" class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                            <tr>
-                                <th th:text="#{revenue.table.id}">ID</th>
-                                <th th:text="#{revenue.table.date}">Date</th>
-                                <th th:text="#{revenue.table.bookingId}">Booking ID</th>
-                                <th th:text="#{revenue.table.total}">Revenue</th>
-                                <th th:text="#{revenue.table.created}">Created</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr th:each="revenue : ${revenues}">
-                                <td th:text="${revenue.id}">1</td>
-                                <td>
-                                    <span th:replace="~{layouts/fragments :: date(${revenue.date}, 'dd/MM/yyyy')}">01/01/2024</span>
-                                </td>
-                                <td>
-                                    <a th:if="${revenue.bookingId != null}" 
-                                       th:href="@{/admin/bookings/{id}/edit(id=${revenue.bookingId})}"
-                                       class="text-primary">
-                                        <span th:text="${revenue.bookingId}">1</span>
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search"></i> <span
+                                            th:text="#{common.actions.filter}">Filter</span>
+                                    </button>
+                                    <a href="/admin/revenue" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> <span
+                                            th:text="#{common.actions.clear}">Clear</span>
                                     </a>
-                                    <span th:if="${revenue.bookingId == null}" class="text-muted" th:text="#{common.na}">N/A</span>
-                                </td>
-                                <td>
-                                    <span class="fw-bold text-success" th:replace="~{layouts/fragments :: currency(${revenue.totalRevenue}, #{currency.vnd})}">0 VND</span>
-                                </td>
-                                <td>
-                                    <small th:replace="~{layouts/fragments :: date(${revenue.createdAt}, 'dd/MM/yyyy HH:mm')}">01/01/2024 12:00</small>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination -->
-                    <div th:unless="${revenues.empty}" class="d-flex justify-content-between align-items-center mt-4">
-                        <div>
-                            <span class="text-muted">
-                                <span th:text="#{common.pagination.showing}">Showing</span>
-                                <span th:text="${revenues.number * revenues.size + 1}">1</span>
-                                <span th:text="#{common.pagination.to}">to</span>
-                                <span th:text="${revenues.number * revenues.size + revenues.numberOfElements}">10</span>
-                                <span th:text="#{common.pagination.of}">of</span>
-                                <span th:text="${revenues.totalElements}">100</span>
-                                <span th:text="#{common.pagination.entries}">entries</span>
-                            </span>
-                        </div>
-                        <nav>
-                            <ul class="pagination pagination-sm mb-0">
-                                <li class="page-item" th:classappend="${!revenues.hasPrevious()} ? 'disabled'">
-                                    <a class="page-link" th:href="@{/admin/revenue(page=${revenues.number - 1}, size=${revenues.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}" th:text="#{common.pagination.previous}">Previous</a>
-                                </li>
-                                <li th:each="pageNum : ${#numbers.sequence(0, revenues.totalPages - 1)}"
-                                    class="page-item"
-                                    th:classappend="${pageNum == revenues.number} ? 'active'">
-                                    <a class="page-link"
-                                       th:href="@{/admin/revenue(page=${pageNum}, size=${revenues.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}"
-                                       th:text="${pageNum + 1}">1</a>
-                                </li>
-                                <li class="page-item" th:classappend="${!revenues.hasNext()} ? 'disabled'">
-                                    <a class="page-link" th:href="@{/admin/revenue(page=${revenues.number + 1}, size=${revenues.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}" th:text="#{common.pagination.next}">Next</a>
-                                </li>
-                            </ul>
-                        </nav>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            </div>
-        </main>
+
+                <!-- Revenue Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0" th:text="#{revenue.management.list.title}">
+                            Revenue List
+                            <span class="badge bg-secondary" th:text="${totalItems}">0</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${revenues.empty}" class="text-center py-5">
+                            <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted" th:text="#{revenue.management.list.empty.title}">No revenue records
+                                found</h4>
+                            <p class="text-muted" th:text="#{revenue.management.list.empty.message}">Revenue records
+                                will appear here once data is available.</p>
+                        </div>
+
+                        <div th:unless="${revenues.empty}" class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th th:text="#{revenue.table.id}">ID</th>
+                                        <th th:text="#{revenue.table.date}">Date</th>
+                                        <th th:text="#{revenue.table.bookingId}">Booking ID</th>
+                                        <th th:text="#{revenue.table.total}">Revenue</th>
+                                        <th th:text="#{revenue.table.created}">Created</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="revenue : ${revenues}">
+                                        <td th:text="${revenue.id}">1</td>
+                                        <td>
+                                            <span
+                                                th:replace="~{layouts/fragments :: date(${revenue.date}, 'dd/MM/yyyy')}">01/01/2024</span>
+                                        </td>
+                                        <td>
+                                            <a th:if="${revenue.bookingId != null}"
+                                                th:href="@{/admin/bookings/{id}/edit(id=${revenue.bookingId})}"
+                                                class="text-primary">
+                                                <span th:text="${revenue.bookingId}">1</span>
+                                            </a>
+                                            <span th:if="${revenue.bookingId == null}" class="text-muted"
+                                                th:text="#{common.na}">N/A</span>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold text-success"
+                                                th:replace="~{layouts/fragments :: currency(${revenue.totalRevenue}, #{currency.vnd})}">0
+                                                VND</span>
+                                        </td>
+                                        <td>
+                                            <small
+                                                th:replace="~{layouts/fragments :: date(${revenue.createdAt}, 'dd/MM/yyyy HH:mm')}">01/01/2024
+                                                12:00</small>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div th:unless="${revenues.empty}"
+                            class="d-flex justify-content-between align-items-center mt-4">
+                            <div>
+                                <span class="text-muted">
+                                    <span th:text="#{common.pagination.showing}">Showing</span>
+                                    <span th:text="${revenues.number * revenues.size + 1}">1</span>
+                                    <span th:text="#{common.pagination.to}">to</span>
+                                    <span
+                                        th:text="${revenues.number * revenues.size + revenues.numberOfElements}">10</span>
+                                    <span th:text="#{common.pagination.of}">of</span>
+                                    <span th:text="${revenues.totalElements}">100</span>
+                                    <span th:text="#{common.pagination.entries}">entries</span>
+                                </span>
+                            </div>
+                            <nav>
+                                <ul class="pagination pagination-sm mb-0">
+                                    <li class="page-item" th:classappend="${!revenues.hasPrevious()} ? 'disabled'">
+                                        <a class="page-link"
+                                            th:href="@{/admin/revenue(page=${revenues.number - 1}, size=${revenues.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}"
+                                            th:text="#{common.pagination.previous}">Previous</a>
+                                    </li>
+                                    <li th:each="pageNum : ${#numbers.sequence(0, revenues.totalPages - 1)}"
+                                        class="page-item" th:classappend="${pageNum == revenues.number} ? 'active'">
+                                        <a class="page-link"
+                                            th:href="@{/admin/revenue(page=${pageNum}, size=${revenues.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}"
+                                            th:text="${pageNum + 1}">1</a>
+                                    </li>
+                                    <li class="page-item" th:classappend="${!revenues.hasNext()} ? 'disabled'">
+                                        <a class="page-link"
+                                            th:href="@{/admin/revenue(page=${revenues.number + 1}, size=${revenues.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search})}"
+                                            th:text="#{common.pagination.next}">Next</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
     </div>
-</div>
 
-<div th:replace="~{layouts/fragments :: scripts}"></div>
-<script th:src="@{/vendor/chartjs/js/chart.umd.js}"></script>
-<script th:inline="javascript">
-    window.revenueChartLabels = /*[[${revenueChartLabels}]]*/ [];
-    window.revenueChartValues = /*[[${revenueChartValues}]]*/ [];
-    window.revenueChartBookings = /*[[${revenueChartBookings}]]*/ [];
-    window.categoryRevenueLabels = /*[[${categoryRevenueLabels}]]*/ [];
-    window.categoryRevenueValues = /*[[${categoryRevenueValues}]]*/ [];
-    window.categoryRevenueBookings = /*[[${categoryRevenueBookings}]]*/ [];
-    window.topRatedTourLabels = /*[[${topRatedTourLabels}]]*/ [];
-    window.topRatedTourRatings = /*[[${topRatedTourRatings}]]*/ [];
-    window.topRatedTourReviews = /*[[${topRatedTourReviews}]]*/ [];
-    window.revenueCurrency = /*[[#{currency.vnd}]]*/ 'VND';
-    window.i18nCategoryBookings = /*[[#{revenue.chart.category.bookings}]]*/ 'bookings';
-    window.i18nRatingReviews = /*[[#{revenue.chart.rating.reviews}]]*/ 'reviews';
-    window.i18nRevenueDataset = /*[[#{revenue.chart.monthly.dataset}]]*/ 'Revenue';
-    window.i18nBookingDataset = /*[[#{revenue.chart.booking.dataset}]]*/ 'Bookings';
-    window.i18nShareDataset = /*[[#{revenue.chart.share.dataset}]]*/ 'Revenue';
-    window.i18nCategoryDataset = /*[[#{revenue.chart.category.dataset}]]*/ 'Category revenue';
-    window.i18nRatingDataset = /*[[#{revenue.chart.rating.dataset}]]*/ 'Avg rating';
-</script>
-<script th:src="@{/js/revenue-charts.js}"></script>
+    <div th:replace="~{layouts/fragments :: scripts}"></div>
+    <script th:src="@{/vendor/chartjs/js/chart.umd.js}"></script>
+    <script th:inline="javascript">
+        window.revenueChartLabels = /*[[${revenueChartLabels}]]*/[];
+        window.revenueChartValues = /*[[${revenueChartValues}]]*/[];
+        window.revenueChartBookings = /*[[${revenueChartBookings}]]*/[];
+        window.categoryRevenueLabels = /*[[${categoryRevenueLabels}]]*/[];
+        window.categoryRevenueValues = /*[[${categoryRevenueValues}]]*/[];
+        window.categoryRevenueBookings = /*[[${categoryRevenueBookings}]]*/[];
+        window.topRatedTourLabels = /*[[${topRatedTourLabels}]]*/[];
+        window.topRatedTourRatings = /*[[${topRatedTourRatings}]]*/[];
+        window.topRatedTourReviews = /*[[${topRatedTourReviews}]]*/[];
+        window.revenueCurrency = /*[[#{currency.vnd}]]*/ 'VND';
+        window.i18nCategoryBookings = /*[[#{revenue.chart.category.bookings}]]*/ 'bookings';
+        window.i18nRatingReviews = /*[[#{revenue.chart.rating.reviews}]]*/ 'reviews';
+        window.i18nRevenueDataset = /*[[#{revenue.chart.monthly.dataset}]]*/ 'Revenue';
+        window.i18nBookingDataset = /*[[#{revenue.chart.booking.dataset}]]*/ 'Bookings';
+        window.i18nShareDataset = /*[[#{revenue.chart.share.dataset}]]*/ 'Revenue';
+        window.i18nCategoryDataset = /*[[#{revenue.chart.category.dataset}]]*/ 'Category revenue';
+        window.i18nRatingDataset = /*[[#{revenue.chart.rating.dataset}]]*/ 'Avg rating';
+    </script>
+    <script th:src="@{/js/revenue-charts.js}"></script>
 </body>
-</html>
 
+</html>
